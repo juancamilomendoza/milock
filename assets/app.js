@@ -91,7 +91,9 @@
       const p = {};
       keys.forEach((k, i) => { if (k) p[k] = (r[i] || "").trim(); });
       p.price = parseInt((p.price || "").replace(/[^\d]/g, ""), 10) || 0;
-      p.photo = photoUrl(p.photo);
+      // Varias fotos en la misma celda: una por línea, o separadas por coma, espacio o punto y coma.
+      p.photos = (p.photo || "").split(/[\s,;|]+/).map(photoUrl).filter(Boolean);
+      p.photo = p.photos[0] || "";
       p.gender = p.gender || "Unisex";
       p.movement = movementName(p.movement);
       const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
@@ -185,15 +187,33 @@
   const modal = document.getElementById("video-modal"), media = document.getElementById("vm-media");
   const $ = (id) => document.getElementById(id);
   let current = null;
-  function showMedia(p, video) {
-    media.classList.toggle("is-video", !!video);
-    media.innerHTML = video ? videoHTML(p.video)
-      : p.photo ? `<img src="${esc(p.photo)}" alt="${esc(p.brand + " " + p.model)}">` : watchSVG(p);
-    const sw = $("vm-switch");
-    sw.hidden = !p.video;
-    sw.textContent = video ? "Ver foto" : "Ver video";
-    sw.dataset.video = video ? "1" : "";
+  // Galería de la ficha: fotos y, si hay, el video como última miniatura.
+  let slides = [], slide = 0;
+  function showSlide(i) {
+    slide = (i + slides.length) % slides.length;
+    const s = slides[slide];
+    media.classList.toggle("is-video", s.type === "video");
+    media.innerHTML = s.type === "video" ? videoHTML(current.video)
+      : s.type === "photo" ? `<img src="${esc(s.src)}" alt="${esc(current.brand + " " + current.model)}">` : watchSVG(current);
+    $("vm-thumbs").querySelectorAll("button").forEach((b, j) => b.setAttribute("aria-current", j === slide));
   }
+  function showMedia(p, video) {
+    slides = (p.photos && p.photos.length ? p.photos.map((src) => ({ type: "photo", src })) : [{ type: "svg" }]);
+    if (p.video) slides.push({ type: "video" });
+    const many = slides.length > 1;
+    $("vm-prev").hidden = $("vm-next").hidden = $("vm-thumbs").hidden = !many;
+    $("vm-thumbs").innerHTML = many ? slides.map((s, j) => `<button type="button" data-s="${j}" aria-label="${s.type === "video" ? "Ver video" : "Ver foto " + (j + 1)}">${
+      s.type === "photo" ? `<img src="${esc(s.src)}" alt="" loading="lazy">` : s.type === "video" ? `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>` : ""}</button>`).join("") : "";
+    showSlide(video && p.video ? slides.length - 1 : 0);
+  }
+  $("vm-prev").addEventListener("click", () => showSlide(slide - 1));
+  $("vm-next").addEventListener("click", () => showSlide(slide + 1));
+  $("vm-thumbs").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) showSlide(+b.dataset.s); });
+  modal.addEventListener("keydown", (e) => {
+    if (slides.length < 2) return;
+    if (e.key === "ArrowLeft") showSlide(slide - 1);
+    if (e.key === "ArrowRight") showSlide(slide + 1);
+  });
   function openDetail(p, video) {
     current = p;
     showMedia(p, video && p.video);
@@ -213,7 +233,6 @@
   }
   function closeDetail() { media.innerHTML = ""; if (modal.open) modal.close(); }
   $("vm-close").addEventListener("click", closeDetail);
-  $("vm-switch").addEventListener("click", (e) => { if (current) showMedia(current, !e.currentTarget.dataset.video); });
   modal.addEventListener("click", (e) => { if (e.target === modal) closeDetail(); });
   modal.addEventListener("close", () => { media.innerHTML = ""; });
   grid.addEventListener("click", (e) => {
@@ -232,11 +251,12 @@
   let SHOWN = [];
   function card(p, i) {
     const img = p.photo ? `<img src="${esc(p.photo)}" alt="${esc(p.brand + " " + p.model)}" loading="lazy">` : watchSVG(p);
+    const count = p.photos && p.photos.length > 1 ? `<span class="pcount">${p.photos.length} fotos</span>` : "";
     const tag = p.soldOut ? "Agotado" : p.tag;
     const msg = orderMsg(p);
     const play = p.video ? `<button class="play" type="button" data-i="${i}" aria-label="Ver video del ${esc(p.brand + " " + p.model)}"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>Ver video</button>` : "";
     return `<article class="card${p.soldOut ? " agotado" : ""}">
-      <div class="img" data-i="${i}">${tag ? `<span class="tag">${esc(tag)}</span>` : ""}${img}${play}</div>
+      <div class="img" data-i="${i}">${tag ? `<span class="tag">${esc(tag)}</span>` : ""}${img}${count}${play}</div>
       <div class="body">
         <div class="brandname">${esc(p.brand)}${p.movement ? ` · <span class="mov">${esc(p.movement)}</span>` : ""}</div>
         <h3 data-i="${i}">${esc(p.model)}</h3>

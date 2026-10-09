@@ -25,7 +25,7 @@ La página lee los productos de una Google Sheet publicada como CSV. Columnas (l
 | Material De La Caja | Acero inoxidable | Se muestra en la ficha de detalle |
 | Material Del Pulso | Acero / Cuero / Caucho | Crea el filtro por material |
 | Mecanismo | Automático / Pila / Solar | Crea el filtro por mecanismo |
-| Foto | enlace de la imagen | Sirve un enlace de Google Drive compartido como "Cualquier persona con el enlace" |
+| Foto | enlace de la imagen | Varias fotos: un enlace por línea dentro de la misma celda (Alt+Enter) o separados por coma. La primera es la principal. Sirven enlaces de Google Drive compartidos como "Cualquier persona con el enlace" |
 | Video | casio-ga2100.mp4 | Opcional. Nombre del archivo subido a `videos/`, o enlace de YouTube o Google Drive |
 | Disponible | Sí / No | "No" muestra el reloj como agotado |
 | Etiqueta | Nuevo | Opcional, aparece sobre la foto |

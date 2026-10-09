@@ -78,6 +78,8 @@ section{padding-block:64px}
 .card .ref{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
 .card .row{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-top:10px}
 .price{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
+.price .was{font-size:.68em;font-weight:500;color:var(--muted);margin-left:4px}
+.off{position:absolute;right:12px;top:12px;z-index:1;font-size:12px;font-weight:800;background:#C0392B;color:#fff;padding:4px 9px;border-radius:6px}
 .eta{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px}
 .eta svg{width:13px;height:13px}
 .card .btn{margin-top:14px;width:100%}

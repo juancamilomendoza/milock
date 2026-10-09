@@ -29,6 +29,7 @@ La página lee los productos de una Google Sheet publicada como CSV. Columnas (l
 | Video | casio-ga2100.mp4 | Opcional. Nombre del archivo subido a `videos/`, o enlace de YouTube o Google Drive |
 | Disponible | Sí / No | "No" muestra el reloj como agotado |
 | Etiqueta | Nuevo | Opcional, aparece sobre la foto |
+| Descuento | 20% | Opcional. Porcentaje de descuento: la página muestra el precio ya rebajado y el original tachado |
 | Descripción | Texto libre | Se muestra en la ficha de detalle |
 
 `plantilla-catalogo.csv` trae estas columnas listas para importar en Google Sheets.

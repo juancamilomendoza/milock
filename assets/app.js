@@ -81,7 +81,7 @@
   }
 
   const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z]/g, "");
-  const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", entrega: "days", tiempodeentrega: "days", genero: "gender", para: "gender", mecanismo: "movement", material: "material", correa: "material", materialdelpulso: "material", pulso: "material", materialdelacaja: "caseMaterial", caja: "caseMaterial", color: "color", descripcion: "desc", movimiento: "movement", tipo: "movement", video: "video", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag" };
+  const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", entrega: "days", tiempodeentrega: "days", genero: "gender", para: "gender", mecanismo: "movement", material: "material", correa: "material", materialdelpulso: "material", pulso: "material", materialdelacaja: "caseMaterial", caja: "caseMaterial", color: "color", descripcion: "desc", movimiento: "movement", tipo: "movement", video: "video", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag", descuento: "discount", dcto: "discount", oferta: "discount" };
 
   // Convierte enlaces de Google Drive a una imagen directa.
   function photoUrl(u) {
@@ -97,6 +97,12 @@
       const p = {};
       keys.forEach((k, i) => { if (k) p[k] = (r[i] || "").trim(); });
       p.price = parseInt((p.price || "").replace(/[^\d]/g, ""), 10) || 0;
+      // Descuento en %: acepta "20", "20%" o "0,2". El precio mostrado ya va rebajado.
+      let d = parseFloat((p.discount || "").replace(",", ".").replace(/[^\d.]/g, "")) || 0;
+      if (d > 0 && d < 1 && !/%/.test(p.discount)) d *= 100;
+      p.discount = d > 0 && d < 100 && p.price ? Math.round(d) : 0;
+      p.listPrice = p.price;
+      if (p.discount) p.price = Math.round(p.price * (1 - p.discount / 100));
       // Varias fotos en la misma celda: una por línea, o separadas por coma, espacio o punto y coma.
       p.photos = (p.photo || "").split(/[\s,;|]+/).map(photoUrl).filter(Boolean);
       p.photo = p.photos[0] || "";
@@ -226,7 +232,7 @@
     showMedia(p, video && p.video);
     $("vm-brand").innerHTML = esc(p.brand) + (p.movement ? ` · <span class="mov">${esc(p.movement)}</span>` : "");
     $("vm-title").textContent = p.model;
-    $("vm-price").textContent = p.price ? fmt(p.price) : "Consultar";
+    $("vm-price").innerHTML = priceHTML(p);
     $("vm-eta").innerHTML = eta(p.days);
     const specs = [["Referencia", p.ref], ["Color", p.color], ["Para", p.gender], ["Mecanismo", p.movement],
       ["Material de la caja", p.caseMaterial], ["Material del pulso", p.material]].filter((s) => s[1]);
@@ -248,13 +254,15 @@
     openDetail(p, b.classList.contains("play"));
   });
 
-  const orderMsg = (p) => `Hola MILOCK, me interesa el ${p.brand} ${p.model}${p.ref ? " (Ref. " + p.ref + ")" : ""}${p.price ? " de " + fmt(p.price) : ""}. ¿Me das más información?`;
+  const orderMsg = (p) => `Hola MILOCK, me interesa el ${p.brand} ${p.model}${p.ref ? " (Ref. " + p.ref + ")" : ""}${p.price ? " de " + fmt(p.price) : ""}${p.discount ? " (con el " + p.discount + "% de descuento)" : ""}. ¿Me das más información?`;
   function eta(d) {
     if (!d) return "";
     const icon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`;
     if (/inmediat/i.test(d)) return `<span class="eta now">${icon}Entrega inmediata</span>`;
     return `<span class="eta">${icon}${esc(d)}${/^[\d\s–-]+$/.test(d) ? " días" : ""}</span>`;
   }
+  const priceHTML = (p) => !p.price ? "Consultar"
+    : fmt(p.price) + (p.discount ? ` <s class="was">${fmt(p.listPrice)}</s>` : "");
   let SHOWN = [];
   function card(p, i) {
     const img = p.photo ? `<img src="${esc(p.photo)}" alt="${esc(p.brand + " " + p.model)}" loading="lazy">` : watchSVG(p);
@@ -263,13 +271,13 @@
     const msg = orderMsg(p);
     const play = p.video ? `<button class="play" type="button" data-i="${i}" aria-label="Ver video del ${esc(p.brand + " " + p.model)}"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>Ver video</button>` : "";
     return `<article class="card${p.soldOut ? " agotado" : ""}">
-      <div class="img" data-i="${i}">${tag ? `<span class="tag">${esc(tag)}</span>` : ""}${img}${count}${play}</div>
+      <div class="img" data-i="${i}">${tag ? `<span class="tag">${esc(tag)}</span>` : ""}${p.discount && !p.soldOut ? `<span class="off">-${p.discount}%</span>` : ""}${img}${count}${play}</div>
       <div class="body">
         <div class="brandname">${esc(p.brand)}${p.movement ? ` · <span class="mov">${esc(p.movement)}</span>` : ""}</div>
         <h3 data-i="${i}">${esc(p.model)}</h3>
         ${p.ref || p.color ? `<div class="ref">${[p.color, p.ref && "Ref. " + p.ref].filter(Boolean).map(esc).join(" · ")}</div>` : ""}
         <div class="row">
-          <span class="price">${p.price ? fmt(p.price) : "Consultar"}</span>
+          <span class="price">${priceHTML(p)}</span>
           ${eta(p.days)}
         </div>
         <button class="more" type="button" data-i="${i}">Ver detalles</button>

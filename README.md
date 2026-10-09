@@ -1,0 +1,33 @@
+# MILOCK · Tienda virtual
+
+Tienda virtual de MILOCK, relojería en Cali, Colombia. Catálogo de relojes originales por encargo con pedidos por WhatsApp.
+
+## Cómo está hecha
+
+- `index.html`: la página.
+- `assets/styles.css` y `assets/app.js`: diseño y funcionamiento del catálogo.
+- `assets/logos/`: logos de MILOCK.
+- `config.js`: número de WhatsApp y enlace de la Google Sheet del catálogo.
+
+## Catálogo desde Google Sheets
+
+La página lee los productos de una Google Sheet publicada como CSV. Columnas (la primera fila debe tener estos nombres):
+
+| Columna | Ejemplo | Notas |
+|---|---|---|
+| Marca | Casio | Se usa para los filtros por marca |
+| Modelo | G-Shock GA-2100 | |
+| Referencia | GA-2100-1A1 | Opcional |
+| Precio | 520000 | Sin puntos o con ellos, da igual |
+| Días de entrega | 8–12 | Opcional |
+| Foto | enlace de la imagen | Sirve un enlace de Google Drive compartido como "Cualquier persona con el enlace" |
+| Disponible | Sí / No | "No" muestra el reloj como agotado |
+| Etiqueta | Nuevo | Opcional, aparece sobre la foto |
+
+`plantilla-catalogo.csv` trae estas columnas listas para importar en Google Sheets.
+
+Para conectarla: en la hoja, Archivo > Compartir > Publicar en la web > CSV, copiar el enlace y pegarlo en `sheetCsvUrl` dentro de `config.js`. Mientras ese campo esté vacío, la página muestra productos de ejemplo.
+
+## Publicación
+
+La página se publica con GitHub Pages desde la rama `main` (Settings > Pages > Deploy from a branch > main / root).

@@ -1,0 +1,165 @@
+(function () {
+  const CFG = window.MILOCK_CONFIG || {};
+  const WA = CFG.whatsapp || "573128544398";
+  const wa = (msg) => "https://wa.me/" + WA + "?text=" + encodeURIComponent(msg);
+  ["wa-top", "wa-foot", "wa-float"].forEach((id) => {
+    const a = document.getElementById(id);
+    if (a) a.href = wa("Hola MILOCK, quiero información sobre sus relojes.");
+  });
+
+  // Productos de ejemplo: se muestran solo mientras no haya Google Sheet configurada.
+  const SAMPLE = [
+    { brand: "Casio", model: "G-Shock GA-2100", ref: "GA-2100-1A1", price: 520000, days: "8–12", dial: "#1d1f22", strap: "#1d1f22", round: false, tag: "Más pedido" },
+    { brand: "Seiko", model: "5 Sports Automático", ref: "SRPD55", price: 1350000, days: "10–15", dial: "#24364a", strap: "#8f969c", round: true },
+    { brand: "Citizen", model: "Eco-Drive Chandler", ref: "BM8180-03E", price: 890000, days: "10–15", dial: "#2f3a2a", strap: "#5a3d26", round: true },
+    { brand: "Fossil", model: "Grant Cronógrafo", ref: "FS4735", price: 760000, days: "8–12", dial: "#f1ede4", strap: "#6b4528", round: true },
+    { brand: "MVMT", model: "Classic Black Tan", ref: "D-MM01-BLBR", price: 690000, days: "10–15", dial: "#111111", strap: "#9a6a3c", round: true, tag: "Nuevo" },
+    { brand: "Bulova", model: "Marine Star", ref: "98B300", price: 1180000, days: "10–15", dial: "#173a63", strap: "#a9b0b5", round: true },
+    { brand: "Pagani Design", model: "PD-1661 Diver", ref: "PD-1661", price: 450000, days: "15–20", dial: "#0f4a3c", strap: "#a9b0b5", round: true },
+    { brand: "Timex", model: "Weekender", ref: "TW2R42500", price: 340000, days: "8–12", dial: "#e9e4d6", strap: "#3b4d3a", round: true },
+  ];
+
+  const fmt = (n) => "$" + n.toLocaleString("es-CO");
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  function light(hex) {
+    const h = hex.replace("#", "");
+    const f = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
+    const n = parseInt(f, 16);
+    return ((n >> 16) * 299 + ((n >> 8) & 255) * 587 + (n & 255) * 114) / 1000 > 150;
+  }
+
+  // Ilustración de reloj para productos sin foto.
+  function watchSVG(p) {
+    const dial = p.dial || "#24364a", strap = p.strap || "#3a3d41";
+    const ink = light(dial) ? "#2B4250" : "#E9EDF0";
+    const hand = light(dial) ? "#1F2F3A" : "#F3F5F6";
+    const ticks = Array.from({ length: 12 }, (_, i) => {
+      const a = (i * 30 * Math.PI) / 180, r1 = i % 3 ? 33 : 30, r2 = 37;
+      return `<line x1="${50 + r1 * Math.sin(a)}" y1="${50 - r1 * Math.cos(a)}" x2="${50 + r2 * Math.sin(a)}" y2="${50 - r2 * Math.cos(a)}" stroke="${ink}" stroke-width="${i % 3 ? 1.4 : 2.6}" stroke-linecap="round"/>`;
+    }).join("");
+    const caseShape = p.round === false
+      ? `<rect x="7" y="7" width="86" height="86" rx="26" fill="#2a2c2f"/><polygon points="50,12 84,28 88,50 84,72 50,88 16,72 12,50 16,28" fill="#3a3d41"/><circle cx="50" cy="50" r="39" fill="${dial}"/>`
+      : `<circle cx="50" cy="50" r="44" fill="#c7ccd0"/><circle cx="50" cy="50" r="41" fill="#8a9298"/><circle cx="50" cy="50" r="39" fill="${dial}"/>`;
+    return `<svg viewBox="0 -40 100 180" role="img" aria-label="Ilustración del ${esc(p.brand)} ${esc(p.model)}">
+      <rect x="32" y="-40" width="36" height="52" rx="4" fill="${strap}"/>
+      <rect x="32" y="88" width="36" height="52" rx="4" fill="${strap}"/>
+      ${caseShape}${ticks}
+      <rect x="93" y="46" width="5" height="8" rx="1.5" fill="#8a9298"/>
+      <text x="50" y="35" text-anchor="middle" font-family="Montserrat,sans-serif" font-size="5.5" font-weight="700" letter-spacing=".6" fill="${hand}" opacity=".85">${esc(p.brand.toUpperCase())}</text>
+      <line x1="50" y1="50" x2="50" y2="27" stroke="${hand}" stroke-width="2.4" stroke-linecap="round" transform="rotate(305 50 50)"/>
+      <line x1="50" y1="50" x2="50" y2="20" stroke="${hand}" stroke-width="1.6" stroke-linecap="round" transform="rotate(60 50 50)"/>
+      <line x1="50" y1="56" x2="50" y2="18" stroke="#E4B54D" stroke-width=".8" stroke-linecap="round" transform="rotate(160 50 50)"/>
+      <circle cx="50" cy="50" r="2.2" fill="#E4B54D"/>
+    </svg>`;
+  }
+
+  // --- Google Sheet (CSV publicado) ---
+  function parseCSV(text) {
+    const rows = []; let row = [], cell = "", q = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (q) {
+        if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; }
+        else if (c === '"') q = false;
+        else cell += c;
+      } else if (c === '"') q = true;
+      else if (c === ",") { row.push(cell); cell = ""; }
+      else if (c === "\n" || c === "\r") {
+        if (c === "\r" && text[i + 1] === "\n") i++;
+        row.push(cell); rows.push(row); row = []; cell = "";
+      } else cell += c;
+    }
+    if (cell || row.length) { row.push(cell); rows.push(row); }
+    return rows.filter((r) => r.some((x) => x.trim()));
+  }
+
+  const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z]/g, "");
+  const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag" };
+
+  // Convierte enlaces de Google Drive a una imagen directa.
+  function photoUrl(u) {
+    u = (u || "").trim();
+    const m = u.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]+)/);
+    return m ? "https://lh3.googleusercontent.com/d/" + m[1] : u;
+  }
+
+  function fromSheet(text) {
+    const [header, ...rows] = parseCSV(text);
+    const keys = header.map((h) => COLS[norm(h)]);
+    return rows.map((r) => {
+      const p = {};
+      keys.forEach((k, i) => { if (k) p[k] = (r[i] || "").trim(); });
+      p.price = parseInt((p.price || "").replace(/[^\d]/g, ""), 10) || 0;
+      p.photo = photoUrl(p.photo);
+      const av = norm(p.available || "si");
+      p.soldOut = av === "no" || av === "agotado";
+      return p;
+    }).filter((p) => p.brand && p.model);
+  }
+
+  // --- Catálogo ---
+  let PRODUCTS = [], active = "Todas";
+  const chips = document.getElementById("chips"), grid = document.getElementById("grid"), q = document.getElementById("q");
+
+  function renderChips() {
+    const brands = ["Todas", ...new Set(PRODUCTS.map((p) => p.brand))];
+    chips.innerHTML = brands.map((b) => `<button class="chip" type="button" aria-pressed="${b === active}" data-b="${esc(b)}">${esc(b)}</button>`).join("");
+  }
+  chips.addEventListener("click", (e) => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    active = b.dataset.b;
+    chips.querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", c.dataset.b === active));
+    render();
+  });
+  q.addEventListener("input", render);
+
+  function card(p) {
+    const img = p.photo ? `<img src="${esc(p.photo)}" alt="${esc(p.brand + " " + p.model)}" loading="lazy">` : watchSVG(p);
+    const tag = p.soldOut ? "Agotado" : p.tag;
+    const msg = `Hola MILOCK, quiero pedir el ${p.brand} ${p.model}${p.ref ? " (Ref. " + p.ref + ")" : ""}${p.price ? " de " + fmt(p.price) : ""}. ¿Está disponible?`;
+    return `<article class="card${p.soldOut ? " agotado" : ""}">
+      <div class="img">${tag ? `<span class="tag">${esc(tag)}</span>` : ""}${img}</div>
+      <div class="body">
+        <div class="brandname">${esc(p.brand)}</div>
+        <h3>${esc(p.model)}</h3>
+        ${p.ref ? `<div class="ref">Ref. ${esc(p.ref)}</div>` : ""}
+        <div class="row">
+          <span class="price">${p.price ? fmt(p.price) : "Consultar"}</span>
+          ${p.days ? `<span class="eta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>${esc(p.days)} días</span>` : ""}
+        </div>
+        <a class="btn btn-gold" target="_blank" rel="noopener" href="${wa(p.soldOut ? `Hola MILOCK, vi que el ${p.brand} ${p.model} está agotado. ¿Me avisan cuando vuelva?` : msg)}">${p.soldOut ? "Avísame cuando llegue" : "Pedir por WhatsApp"}</a>
+      </div>
+    </article>`;
+  }
+
+  function render() {
+    const term = q.value.trim().toLowerCase();
+    const list = PRODUCTS.filter((p) => (active === "Todas" || p.brand === active) &&
+      (!term || [p.brand, p.model, p.ref].join(" ").toLowerCase().includes(term)));
+    grid.innerHTML = list.length ? list.map(card).join("")
+      : `<p class="empty">No encontramos relojes con ese nombre. Prueba con otra marca o escríbenos y lo buscamos por ti.</p>`;
+  }
+
+  function useSamples() {
+    PRODUCTS = SAMPLE;
+    document.getElementById("preview-banner").hidden = false;
+  }
+
+  async function load() {
+    if (CFG.sheetCsvUrl) {
+      try {
+        const res = await fetch(CFG.sheetCsvUrl, { cache: "no-store" });
+        if (!res.ok) throw new Error(res.status);
+        PRODUCTS = fromSheet(await res.text());
+        if (!PRODUCTS.length) useSamples();
+      } catch (err) {
+        console.error("No se pudo leer la Google Sheet:", err);
+        useSamples();
+      }
+    } else useSamples();
+    renderChips();
+    render();
+  }
+  load();
+})();

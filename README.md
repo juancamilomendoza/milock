@@ -1,12 +1,13 @@
 # MILOCK · Tienda virtual
 
-Tienda virtual de MILOCK, relojería en Cali, Colombia. Catálogo de relojes originales por encargo con pedidos por WhatsApp.
+Tienda virtual de MILOCK, relojería en Cali, Colombia. Catálogo de relojes para caballero y dama con atención personalizada por WhatsApp.
 
 ## Cómo está hecha
 
 - `index.html`: la página.
 - `assets/styles.css` y `assets/app.js`: diseño y funcionamiento del catálogo.
 - `assets/logos/`: logos de MILOCK.
+- `videos/`: videos de los relojes (ver `videos/LEEME.md`).
 - `config.js`: número de WhatsApp y enlace de la Google Sheet del catálogo.
 
 ## Catálogo desde Google Sheets
@@ -19,8 +20,10 @@ La página lee los productos de una Google Sheet publicada como CSV. Columnas (l
 | Modelo | G-Shock GA-2100 | |
 | Referencia | GA-2100-1A1 | Opcional |
 | Precio | 520000 | Sin puntos o con ellos, da igual |
-| Días de entrega | 8–12 | Opcional |
+| Entrega | Inmediata / 8–12 | "Inmediata" muestra "Entrega inmediata"; un número o rango muestra "días" |
+| Género | Caballero / Dama / Unisex | Unisex aparece en ambos filtros |
 | Foto | enlace de la imagen | Sirve un enlace de Google Drive compartido como "Cualquier persona con el enlace" |
+| Video | casio-ga2100.mp4 | Opcional. Nombre del archivo subido a `videos/`, o enlace de YouTube o Google Drive |
 | Disponible | Sí / No | "No" muestra el reloj como agotado |
 | Etiqueta | Nuevo | Opcional, aparece sobre la foto |
 

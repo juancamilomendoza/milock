@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MILOCK Relojería · Cali, Colombia</title>
-<meta name="description" content="Relojes originales por encargo: Casio, Seiko, Citizen, Fossil, MVMT y más. Pide por WhatsApp y te lo entregamos en Cali, Pasto, Popayán y la Costa Pacífica.">
+<meta name="description" content="Relojes para caballero y dama: Casio, Seiko, Citizen, Fossil, MVMT y más. Atención personalizada por WhatsApp y entregas en Cali, Pasto, Popayán y la Costa Pacífica.">
 <meta property="og:title" content="MILOCK Relojería">
-<meta property="og:description" content="Tu tiempo, nuestro legado. Relojes originales por encargo con pedido por WhatsApp.">
+<meta property="og:description" content="Tu tiempo, nuestro legado. Relojes para caballero y dama con atención personalizada por WhatsApp.">
 <meta property="og:image" content="assets/logos/icono-512.png">
 <meta name="theme-color" content="#2B4250">
 <link rel="icon" href="assets/logos/favicon.png">
@@ -45,10 +45,10 @@
       <div>
         <div class="eyebrow">Relojería · Cali, Colombia</div>
         <h1>Tu tiempo, <em>nuestro legado.</em></h1>
-        <p class="lead">Relojes de Casio, Seiko, Citizen, Fossil, MVMT y más, traídos por encargo desde Estados Unidos y China. Eliges el modelo, lo pedimos al proveedor y te lo entregamos.</p>
+        <p class="lead">Relojes para caballero y dama de Casio, Seiko, Citizen, Fossil, MVMT y más. Te asesoramos por WhatsApp para que encuentres el tuyo y te lo llevamos a tu ciudad.</p>
         <div class="ctas">
           <a class="btn btn-gold" href="#catalogo">Ver catálogo</a>
-          <a class="btn btn-ghost" href="#como-comprar">Cómo funciona el encargo</a>
+          <a class="btn btn-ghost" href="#como-comprar">Cómo comprar</a>
         </div>
       </div>
       <div class="mark"><img src="assets/logos/logo-vertical-oscuro.png" alt=""></div>
@@ -60,15 +60,20 @@
       <div class="sec-head">
         <div>
           <h2>Catálogo</h2>
-          <p>Cada reloj se pide al proveedor cuando haces tu encargo. Te confirmamos disponibilidad antes de cobrar.</p>
+          <p>Elige tu reloj y escríbenos por WhatsApp. Te asesoramos y te confirmamos el tiempo de entrega.</p>
         </div>
       </div>
       <div class="tools">
-        <div class="chips" id="chips" role="group" aria-label="Filtrar por marca"></div>
+        <div class="chips seg" id="gender" role="group" aria-label="Filtrar por caballero o dama">
+          <button class="chip" type="button" aria-pressed="true" data-g="Todos">Todos</button>
+          <button class="chip" type="button" aria-pressed="false" data-g="Caballero">Caballero</button>
+          <button class="chip" type="button" aria-pressed="false" data-g="Dama">Dama</button>
+        </div>
         <label class="search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
           <input id="q" type="search" placeholder="Buscar modelo o referencia" aria-label="Buscar modelo o referencia">
         </label>
+        <div class="chips" id="chips" role="group" aria-label="Filtrar por marca"></div>
       </div>
       <div class="grid" id="grid"><p class="empty">Cargando catálogo…</p></div>
     </div>
@@ -76,11 +81,11 @@
 
   <section class="how" id="como-comprar">
     <div class="wrap">
-      <div class="sec-head"><div><h2>Cómo comprar</h2><p>Trabajamos por encargo. Así funciona desde que eliges hasta que lo tienes en la muñeca.</p></div></div>
+      <div class="sec-head"><div><h2>Cómo comprar</h2><p>Atención personalizada por WhatsApp, desde que eliges hasta que lo tienes en la muñeca.</p></div></div>
       <div class="steps">
         <div class="step"><div class="n">1</div><h3>Elige y escríbenos</h3><p>Toca “Pedir por WhatsApp” en el reloj que te guste. El mensaje sale con el modelo ya escrito.</p></div>
-        <div class="step"><div class="n">2</div><h3>Confirmamos y separas</h3><p>Verificamos con el proveedor que esté disponible, te damos el tiempo de entrega y separas tu reloj.</p></div>
-        <div class="step"><div class="n">3</div><h3>Lo recibes</h3><p>Te avisamos cuando llega y coordinamos la entrega en tu ciudad.</p></div>
+        <div class="step"><div class="n">2</div><h3>Te asesoramos</h3><p>Resolvemos tus dudas, te confirmamos disponibilidad y el tiempo de entrega, y acordamos el pago.</p></div>
+        <div class="step"><div class="n">3</div><h3>Lo recibes</h3><p>Coordinamos la entrega en tu ciudad. Muchos relojes tienen entrega inmediata.</p></div>
       </div>
     </div>
   </section>
@@ -90,7 +95,7 @@
       <div>
         <div class="eyebrow" style="color:var(--gold-deep)">Sobre MILOCK</div>
         <h2 style="font-size:clamp(24px,3vw,32px);font-weight:800;margin-top:10px">Vendiendo relojes en línea desde 2023</h2>
-        <p style="color:var(--muted);max-width:52ch">Asesoría personalizada por WhatsApp, abastecimiento internacional desde Estados Unidos y China y clientes que vuelven a comprar más de cuatro veces al año.</p>
+        <p style="color:var(--muted);max-width:52ch">Asesoría personalizada por WhatsApp y clientes que vuelven a comprar más de cuatro veces al año.</p>
         <p class="cities">Clientes en Cali, Pasto, Popayán y la Costa Pacífica.</p>
       </div>
       <div>
@@ -127,6 +132,14 @@
     <div class="legal"><span>© 2026 MILOCK · Cali, Colombia</span><span>NIT 1.144.078.957-2</span></div>
   </div>
 </footer>
+
+<dialog id="video-modal" aria-label="Video del reloj">
+  <div class="vm-box">
+    <button class="vm-close" type="button" id="vm-close" aria-label="Cerrar video">×</button>
+    <div class="vm-media" id="vm-media"></div>
+    <div class="vm-foot"><b id="vm-title"></b><a class="btn btn-gold" id="vm-wa" target="_blank" rel="noopener" href="#">Pedir por WhatsApp</a></div>
+  </div>
+</dialog>
 
 <a class="wa-float" id="wa-float" href="#" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp">
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 2.9 2.9 0 0 0-.9 2.2 5 5 0 0 0 1.1 2.7 11.5 11.5 0 0 0 4.4 3.9c1.6.7 2.3.8 3.1.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg>

@@ -67,7 +67,7 @@ section{padding-block:64px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:transform .2s ease,box-shadow .2s ease}
 .card:hover{transform:translateY(-3px);box-shadow:0 12px 28px -14px rgba(20,35,45,.35)}
 .card .img{background:var(--dial-bg);aspect-ratio:1/1;display:grid;place-items:center;position:relative;max-width:100%}
-.card .img svg{width:62%;height:auto}
+.card .img > svg{width:62%;height:auto}
 .card .img img{width:100%;height:100%;object-fit:cover;display:block}
 .card.agotado .img{opacity:.55}
 .card.agotado .btn{background:var(--chip);color:var(--muted)}
@@ -129,3 +129,23 @@ footer .legal{grid-column:1/-1;border-top:1px solid rgba(255,255,255,.12);paddin
   .card .btn{padding:10px 8px;font-size:13px}
 }
 @media (prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}}
+
+/* Filtros: género + buscador en la primera fila, marcas debajo */
+.tools #chips{flex-basis:100%}
+.seg{background:var(--chip);padding:4px;border-radius:999px;gap:2px}
+.seg .chip{border:0;background:transparent}
+.seg .chip[aria-pressed="true"]{background:var(--navy);color:#fff}
+.eta.now{color:var(--gold-deep);font-weight:700}
+
+/* Video */
+.play{position:absolute;right:12px;bottom:12px;display:inline-flex;align-items:center;gap:6px;font-family:var(--f-body);font-size:12px;font-weight:700;background:var(--navy);color:#fff;border:0;border-radius:999px;padding:7px 12px 7px 9px;cursor:pointer;box-shadow:0 6px 16px -6px rgba(0,0,0,.5)}
+.play svg{width:16px;height:16px;flex:none}
+.play:hover{background:#1f323e}
+dialog#video-modal{border:0;padding:0;background:transparent;max-width:min(92vw,440px);width:100%}
+dialog#video-modal::backdrop{background:rgba(10,18,24,.78)}
+.vm-box{background:var(--surface);color:var(--fg);border-radius:16px;overflow:hidden;position:relative}
+.vm-media{background:#000;aspect-ratio:9/16;max-height:72vh;width:100%;display:grid;place-items:center}
+.vm-media video,.vm-media iframe{width:100%;height:100%;border:0;display:block;object-fit:contain}
+.vm-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;flex-wrap:wrap}
+.vm-foot b{min-width:0}
+.vm-close{position:absolute;right:10px;top:10px;z-index:2;width:36px;height:36px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:#fff;font-size:22px;line-height:1;cursor:pointer}

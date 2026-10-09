@@ -66,9 +66,9 @@ section{padding-block:64px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:transform .2s ease,box-shadow .2s ease}
 .card:hover{transform:translateY(-3px);box-shadow:0 12px 28px -14px rgba(20,35,45,.35)}
-.card .img{background:var(--dial-bg);aspect-ratio:1/1;display:grid;place-items:center;position:relative;max-width:100%}
+.card .img{background:var(--dial-bg);aspect-ratio:1/1;display:grid;place-items:center;position:relative;max-width:100%;overflow:hidden}
 .card .img > svg{width:62%;height:auto}
-.card .img img{width:100%;height:100%;object-fit:cover;display:block}
+.card .img > img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:6%;box-sizing:border-box;display:block}
 .card.agotado .img{opacity:.55}
 .card.agotado .btn{background:var(--chip);color:var(--muted)}
 .tag{position:absolute;left:12px;top:12px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--surface);color:var(--fg);padding:4px 9px;border-radius:6px}

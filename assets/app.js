@@ -9,14 +9,14 @@
 
   // Productos de ejemplo: se muestran solo mientras no haya Google Sheet configurada.
   const SAMPLE = [
-    { brand: "Casio", model: "G-Shock GA-2100", movement: "Pila", ref: "GA-2100-1A1", price: 520000, days: "Inmediata", gender: "Caballero", dial: "#1d1f22", strap: "#1d1f22", round: false, tag: "Más pedido" },
-    { brand: "Seiko", model: "5 Sports Automático", movement: "Automático", ref: "SRPD55", price: 1350000, days: "8–12", gender: "Caballero", dial: "#24364a", strap: "#8f969c", round: true },
-    { brand: "Citizen", model: "Eco-Drive Chandler", movement: "Solar", ref: "BM8180-03E", price: 890000, days: "Inmediata", gender: "Caballero", dial: "#2f3a2a", strap: "#5a3d26", round: true },
-    { brand: "Fossil", model: "Grant Cronógrafo", movement: "Pila", ref: "FS4735", price: 760000, days: "Inmediata", gender: "Dama", dial: "#f1ede4", strap: "#6b4528", round: true },
-    { brand: "MVMT", model: "Classic Black Tan", movement: "Pila", ref: "D-MM01-BLBR", price: 690000, days: "8–12", gender: "Unisex", dial: "#111111", strap: "#9a6a3c", round: true, tag: "Nuevo" },
-    { brand: "Bulova", model: "Marine Star", movement: "Pila", ref: "98B300", price: 1180000, days: "8–12", gender: "Caballero", dial: "#173a63", strap: "#a9b0b5", round: true },
-    { brand: "Pagani Design", model: "PD-1661 Diver", movement: "Automático", ref: "PD-1661", price: 450000, days: "Inmediata", gender: "Caballero", dial: "#0f4a3c", strap: "#a9b0b5", round: true },
-    { brand: "Timex", model: "Weekender", movement: "Pila", ref: "TW2R42500", price: 340000, days: "8–12", gender: "Dama", dial: "#e9e4d6", strap: "#3b4d3a", round: true },
+    { brand: "Casio", model: "G-Shock GA-2100", material: "Resina", movement: "Pila", ref: "GA-2100-1A1", price: 520000, days: "Inmediata", gender: "Caballero", dial: "#1d1f22", strap: "#1d1f22", round: false, tag: "Más pedido" },
+    { brand: "Seiko", model: "5 Sports Automático", material: "Acero", movement: "Automático", ref: "SRPD55", price: 1350000, days: "8–12", gender: "Caballero", dial: "#24364a", strap: "#8f969c", round: true },
+    { brand: "Citizen", model: "Eco-Drive Chandler", material: "Cuero", movement: "Solar", ref: "BM8180-03E", price: 890000, days: "Inmediata", gender: "Caballero", dial: "#2f3a2a", strap: "#5a3d26", round: true },
+    { brand: "Fossil", model: "Grant Cronógrafo", material: "Cuero", movement: "Pila", ref: "FS4735", price: 760000, days: "Inmediata", gender: "Dama", dial: "#f1ede4", strap: "#6b4528", round: true },
+    { brand: "MVMT", model: "Classic Black Tan", material: "Cuero", movement: "Pila", ref: "D-MM01-BLBR", price: 690000, days: "8–12", gender: "Unisex", dial: "#111111", strap: "#9a6a3c", round: true, tag: "Nuevo" },
+    { brand: "Bulova", model: "Marine Star", material: "Acero", movement: "Pila", ref: "98B300", price: 1180000, days: "8–12", gender: "Caballero", dial: "#173a63", strap: "#a9b0b5", round: true },
+    { brand: "Pagani Design", model: "PD-1661 Diver", material: "Acero", movement: "Automático", ref: "PD-1661", price: 450000, days: "Inmediata", gender: "Caballero", dial: "#0f4a3c", strap: "#a9b0b5", round: true },
+    { brand: "Timex", model: "Weekender", material: "Tela", movement: "Pila", ref: "TW2R42500", price: 340000, days: "8–12", gender: "Dama", dial: "#e9e4d6", strap: "#3b4d3a", round: true },
   ];
 
   const fmt = (n) => "$" + n.toLocaleString("es-CO");
@@ -75,7 +75,7 @@
   }
 
   const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z]/g, "");
-  const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", entrega: "days", tiempodeentrega: "days", genero: "gender", para: "gender", mecanismo: "movement", movimiento: "movement", tipo: "movement", video: "video", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag" };
+  const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", entrega: "days", tiempodeentrega: "days", genero: "gender", para: "gender", mecanismo: "movement", material: "material", correa: "material", movimiento: "movement", tipo: "movement", video: "video", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag" };
 
   // Convierte enlaces de Google Drive a una imagen directa.
   function photoUrl(u) {
@@ -94,12 +94,14 @@
       p.photo = photoUrl(p.photo);
       p.gender = p.gender || "Unisex";
       p.movement = movementName(p.movement);
+      p.material = p.material ? p.material.charAt(0).toUpperCase() + p.material.slice(1).toLowerCase() : "";
       const av = norm(p.available || "si");
       p.soldOut = av === "no" || av === "agotado";
       return p;
     }).filter((p) => p.brand && p.model).map((p, _, all) => {
       // Une marcas escritas distinto ("CASIO", "casio ") bajo el primer nombre que aparece.
       p.brand = all.find((o) => norm(o.brand) === norm(p.brand)).brand;
+      if (p.material) p.material = all.find((o) => norm(o.material || "") === norm(p.material)).material;
       return p;
     });
   }
@@ -115,7 +117,7 @@
   }
 
   // --- Catálogo ---
-  let PRODUCTS = [], active = "Todas", gender = "Todos", movement = "Todos";
+  let PRODUCTS = [], active = "Todas", gender = "Todos", movement = "Todos", material = "Todos";
   const chips = document.getElementById("chips"), grid = document.getElementById("grid"), q = document.getElementById("q");
 
   function renderChips() {
@@ -149,6 +151,19 @@
     movementEl.innerHTML = ["Todos", ...kinds].map((k) => `<button class="chip" type="button" aria-pressed="${k === movement}" data-m="${esc(k)}">${esc(k)}</button>`).join("");
   }
   const matchMovement = (p) => movement === "Todos" || p.movement === movement;
+  const materialEl = document.getElementById("material");
+  materialEl.addEventListener("click", (e) => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    material = b.dataset.m;
+    materialEl.querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", c.dataset.m === material));
+    render();
+  });
+  function renderMaterial() {
+    const kinds = [...new Set(PRODUCTS.map((p) => p.material).filter(Boolean))];
+    materialEl.hidden = kinds.length < 2;
+    materialEl.innerHTML = ["Todos", ...kinds].map((k) => `<button class="chip" type="button" aria-pressed="${k === material}" data-m="${esc(k)}">${esc(k)}</button>`).join("");
+  }
+  const matchMaterial = (p) => material === "Todos" || p.material === material;
   const matchGender = (p) => gender === "Todos" || norm(p.gender || "unisex") === "unisex" || norm(p.gender) === norm(gender);
 
   // --- Videos: archivo en la carpeta videos/, enlace de YouTube o de Google Drive ---
@@ -193,7 +208,7 @@
       <div class="body">
         <div class="brandname">${esc(p.brand)}${p.movement ? ` · <span class="mov">${esc(p.movement)}</span>` : ""}</div>
         <h3>${esc(p.model)}</h3>
-        ${p.ref ? `<div class="ref">Ref. ${esc(p.ref)}</div>` : ""}
+        ${p.ref || p.material ? `<div class="ref">${[p.material, p.ref && "Ref. " + p.ref].filter(Boolean).map(esc).join(" · ")}</div>` : ""}
         <div class="row">
           <span class="price">${p.price ? fmt(p.price) : "Consultar"}</span>
           ${eta(p.days)}
@@ -205,8 +220,8 @@
 
   function render() {
     const term = q.value.trim().toLowerCase();
-    const list = SHOWN = PRODUCTS.filter((p) => matchGender(p) && matchMovement(p) && (active === "Todas" || p.brand === active) &&
-      (!term || [p.brand, p.model, p.ref].join(" ").toLowerCase().includes(term)));
+    const list = SHOWN = PRODUCTS.filter((p) => matchGender(p) && matchMovement(p) && matchMaterial(p) && (active === "Todas" || p.brand === active) &&
+      (!term || [p.brand, p.model, p.ref, p.material, p.movement].join(" ").toLowerCase().includes(term)));
     grid.innerHTML = list.length ? list.map((p, i) => card(p, i)).join("")
       : `<p class="empty">No encontramos relojes con ese nombre. Prueba con otra marca o escríbenos y lo buscamos por ti.</p>`;
   }
@@ -230,6 +245,7 @@
     } else useSamples();
     renderChips();
     renderMovement();
+    renderMaterial();
     render();
   }
   load();

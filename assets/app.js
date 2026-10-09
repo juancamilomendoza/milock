@@ -96,7 +96,11 @@
       const av = norm(p.available || "si");
       p.soldOut = av === "no" || av === "agotado";
       return p;
-    }).filter((p) => p.brand && p.model);
+    }).filter((p) => p.brand && p.model).map((p, _, all) => {
+      // Une marcas escritas distinto ("CASIO", "casio ") bajo el primer nombre que aparece.
+      p.brand = all.find((o) => norm(o.brand) === norm(p.brand)).brand;
+      return p;
+    });
   }
 
   // --- Catálogo ---

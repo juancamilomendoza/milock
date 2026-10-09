@@ -69,13 +69,30 @@
           <button class="chip" type="button" aria-pressed="false" data-g="Caballero">Caballero</button>
           <button class="chip" type="button" aria-pressed="false" data-g="Dama">Dama</button>
         </div>
-        <div class="chips seg" id="movement" role="group" aria-label="Filtrar por mecanismo" hidden></div>
-        <div class="chips seg" id="material" role="group" aria-label="Filtrar por material" hidden></div>
         <label class="search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-          <input id="q" type="search" placeholder="Buscar modelo o referencia" aria-label="Buscar modelo o referencia">
+          <input id="q" type="search" placeholder="Buscar modelo, referencia o color" aria-label="Buscar modelo, referencia o color">
         </label>
-        <div class="chips" id="chips" role="group" aria-label="Filtrar por marca"></div>
+        <div class="tools-end">
+          <button class="filter-btn" type="button" id="filter-toggle" aria-expanded="false" aria-controls="filter-panel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+            Filtros <span class="count" id="filter-count" hidden></span>
+          </button>
+          <label class="sort">
+            <span class="sr-only">Ordenar</span>
+            <select id="sort" aria-label="Ordenar">
+              <option value="">Recomendados</option>
+              <option value="asc">Menor precio</option>
+              <option value="desc">Mayor precio</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <div class="filter-panel" id="filter-panel" hidden>
+        <div class="fgroup"><h4>Marca</h4><div class="chips" id="chips" role="group" aria-label="Filtrar por marca"></div></div>
+        <div class="fgroup" id="g-movement" hidden><h4>Mecanismo</h4><div class="chips" id="movement" role="group" aria-label="Filtrar por mecanismo"></div></div>
+        <div class="fgroup" id="g-material" hidden><h4>Material del pulso</h4><div class="chips" id="material" role="group" aria-label="Filtrar por material del pulso"></div></div>
+        <button class="more" type="button" id="filter-clear">Limpiar filtros</button>
       </div>
       <div class="grid" id="grid"><p class="empty">Cargando catálogo…</p></div>
     </div>
@@ -135,11 +152,21 @@
   </div>
 </footer>
 
-<dialog id="video-modal" aria-label="Video del reloj">
+<dialog id="video-modal" aria-label="Detalle del reloj">
   <div class="vm-box">
-    <button class="vm-close" type="button" id="vm-close" aria-label="Cerrar video">×</button>
+    <button class="vm-close" type="button" id="vm-close" aria-label="Cerrar">×</button>
     <div class="vm-media" id="vm-media"></div>
-    <div class="vm-foot"><b id="vm-title"></b><a class="btn btn-gold" id="vm-wa" target="_blank" rel="noopener" href="#">Pedir por WhatsApp</a></div>
+    <div class="vm-info">
+      <div class="brandname" id="vm-brand"></div>
+      <h3 id="vm-title"></h3>
+      <div class="vm-price"><span class="price" id="vm-price"></span><span id="vm-eta"></span></div>
+      <dl class="specs" id="vm-specs"></dl>
+      <p class="vm-desc" id="vm-desc"></p>
+      <div class="vm-actions">
+        <button class="btn btn-line" type="button" id="vm-switch" hidden></button>
+        <a class="btn btn-gold" id="vm-wa" target="_blank" rel="noopener" href="#">Pedir por WhatsApp</a>
+      </div>
+    </div>
   </div>
 </dialog>
 

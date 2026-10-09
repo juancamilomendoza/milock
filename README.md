@@ -17,17 +17,20 @@ La página lee los productos de una Google Sheet publicada como CSV. Columnas (l
 | Columna | Ejemplo | Notas |
 |---|---|---|
 | Marca | Casio | Se usa para los filtros por marca |
-| Modelo | G-Shock GA-2100 | |
+| Modelo | G-Shock GA-2100 | Nombre que ve el cliente |
 | Referencia | GA-2100-1A1 | Opcional |
+| Color | Negro | Opcional, se muestra en la tarjeta |
 | Precio | 520000 | Sin puntos o con ellos, da igual |
 | Entrega | Inmediata / 8–12 | "Inmediata" muestra "Entrega inmediata"; un número o rango muestra "días" |
 | Género | Caballero / Dama / Unisex | Unisex aparece en ambos filtros |
-| Mecanismo | Automático / Pila / Solar | Crea el filtro por mecanismo y se muestra junto a la marca |
-| Material | Acero / Cuero / Caucho | Material de la correa. Crea el filtro por material |
+| Material De La Caja | Acero inoxidable | Se muestra en la ficha de detalle |
+| Material Del Pulso | Acero / Cuero / Caucho | Crea el filtro por material |
+| Mecanismo | Automático / Pila / Solar | Crea el filtro por mecanismo |
 | Foto | enlace de la imagen | Sirve un enlace de Google Drive compartido como "Cualquier persona con el enlace" |
 | Video | casio-ga2100.mp4 | Opcional. Nombre del archivo subido a `videos/`, o enlace de YouTube o Google Drive |
 | Disponible | Sí / No | "No" muestra el reloj como agotado |
 | Etiqueta | Nuevo | Opcional, aparece sobre la foto |
+| Descripción | Texto libre | Se muestra en la ficha de detalle |
 
 `plantilla-catalogo.csv` trae estas columnas listas para importar en Google Sheets.
 

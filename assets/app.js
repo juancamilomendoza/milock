@@ -9,10 +9,10 @@
 
   // Productos de ejemplo: se muestran solo mientras no haya Google Sheet configurada.
   const SAMPLE = [
-    { brand: "Casio", model: "G-Shock GA-2100", material: "Resina", movement: "Pila", ref: "GA-2100-1A1", price: 520000, days: "Inmediata", gender: "Caballero", dial: "#1d1f22", strap: "#1d1f22", round: false, tag: "Más pedido" },
-    { brand: "Seiko", model: "5 Sports Automático", material: "Acero", movement: "Automático", ref: "SRPD55", price: 1350000, days: "8–12", gender: "Caballero", dial: "#24364a", strap: "#8f969c", round: true },
+    { brand: "Casio", model: "G-Shock GA-2100", material: "Resina", caseMaterial: "Resina y fibra de carbono", color: "Negro", desc: "Caja octagonal delgada, resistente a golpes y al agua hasta 200 m. Luz LED y hora mundial.", movement: "Pila", ref: "GA-2100-1A1", price: 520000, days: "Inmediata", gender: "Caballero", dial: "#1d1f22", strap: "#1d1f22", round: false, tag: "Más pedido" },
+    { brand: "Seiko", model: "5 Sports Automático", material: "Acero", caseMaterial: "Acero inoxidable", color: "Azul", movement: "Automático", ref: "SRPD55", price: 1350000, days: "8–12", gender: "Caballero", dial: "#24364a", strap: "#8f969c", round: true },
     { brand: "Citizen", model: "Eco-Drive Chandler", material: "Cuero", movement: "Solar", ref: "BM8180-03E", price: 890000, days: "Inmediata", gender: "Caballero", dial: "#2f3a2a", strap: "#5a3d26", round: true },
-    { brand: "Fossil", model: "Grant Cronógrafo", material: "Cuero", movement: "Pila", ref: "FS4735", price: 760000, days: "Inmediata", gender: "Dama", dial: "#f1ede4", strap: "#6b4528", round: true },
+    { brand: "Fossil", model: "Grant Cronógrafo", material: "Cuero", caseMaterial: "Acero inoxidable", color: "Crema", movement: "Pila", ref: "FS4735", price: 760000, days: "Inmediata", gender: "Dama", dial: "#f1ede4", strap: "#6b4528", round: true },
     { brand: "MVMT", model: "Classic Black Tan", material: "Cuero", movement: "Pila", ref: "D-MM01-BLBR", price: 690000, days: "8–12", gender: "Unisex", dial: "#111111", strap: "#9a6a3c", round: true, tag: "Nuevo" },
     { brand: "Bulova", model: "Marine Star", material: "Acero", movement: "Pila", ref: "98B300", price: 1180000, days: "8–12", gender: "Caballero", dial: "#173a63", strap: "#a9b0b5", round: true },
     { brand: "Pagani Design", model: "PD-1661 Diver", material: "Acero", movement: "Automático", ref: "PD-1661", price: 450000, days: "Inmediata", gender: "Caballero", dial: "#0f4a3c", strap: "#a9b0b5", round: true },
@@ -75,7 +75,7 @@
   }
 
   const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z]/g, "");
-  const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", entrega: "days", tiempodeentrega: "days", genero: "gender", para: "gender", mecanismo: "movement", material: "material", correa: "material", movimiento: "movement", tipo: "movement", video: "video", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag" };
+  const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", entrega: "days", tiempodeentrega: "days", genero: "gender", para: "gender", mecanismo: "movement", material: "material", correa: "material", materialdelpulso: "material", pulso: "material", materialdelacaja: "caseMaterial", caja: "caseMaterial", color: "color", descripcion: "desc", movimiento: "movement", tipo: "movement", video: "video", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag" };
 
   // Convierte enlaces de Google Drive a una imagen directa.
   function photoUrl(u) {
@@ -94,7 +94,10 @@
       p.photo = photoUrl(p.photo);
       p.gender = p.gender || "Unisex";
       p.movement = movementName(p.movement);
-      p.material = p.material ? p.material.charAt(0).toUpperCase() + p.material.slice(1).toLowerCase() : "";
+      const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
+      p.material = cap(p.material);
+      p.caseMaterial = cap(p.caseMaterial);
+      p.color = cap(p.color);
       const av = norm(p.available || "si");
       p.soldOut = av === "no" || av === "agotado";
       return p;
@@ -147,7 +150,7 @@
   });
   function renderMovement() {
     const kinds = [...new Set(PRODUCTS.map((p) => p.movement).filter(Boolean))];
-    movementEl.hidden = kinds.length < 2;
+    document.getElementById("g-movement").hidden = kinds.length < 2;
     movementEl.innerHTML = ["Todos", ...kinds].map((k) => `<button class="chip" type="button" aria-pressed="${k === movement}" data-m="${esc(k)}">${esc(k)}</button>`).join("");
   }
   const matchMovement = (p) => movement === "Todos" || p.movement === movement;
@@ -160,7 +163,7 @@
   });
   function renderMaterial() {
     const kinds = [...new Set(PRODUCTS.map((p) => p.material).filter(Boolean))];
-    materialEl.hidden = kinds.length < 2;
+    document.getElementById("g-material").hidden = kinds.length < 2;
     materialEl.innerHTML = ["Todos", ...kinds].map((k) => `<button class="chip" type="button" aria-pressed="${k === material}" data-m="${esc(k)}">${esc(k)}</button>`).join("");
   }
   const matchMaterial = (p) => material === "Todos" || p.material === material;
@@ -176,18 +179,45 @@
     const src = /^https?:\/\//.test(v) ? v : "videos/" + v.replace(/^\/?(videos\/)?/, "");
     return `<video src="${esc(src)}" controls autoplay playsinline></video>`;
   }
+  // --- Ficha de detalle (foto o video, características y descripción) ---
   const modal = document.getElementById("video-modal"), media = document.getElementById("vm-media");
-  function closeVideo() { media.innerHTML = ""; if (modal.open) modal.close(); }
-  document.getElementById("vm-close").addEventListener("click", closeVideo);
-  modal.addEventListener("click", (e) => { if (e.target === modal) closeVideo(); });
+  const $ = (id) => document.getElementById(id);
+  let current = null;
+  function showMedia(p, video) {
+    media.classList.toggle("is-video", !!video);
+    media.innerHTML = video ? videoHTML(p.video)
+      : p.photo ? `<img src="${esc(p.photo)}" alt="${esc(p.brand + " " + p.model)}">` : watchSVG(p);
+    const sw = $("vm-switch");
+    sw.hidden = !p.video;
+    sw.textContent = video ? "Ver foto" : "Ver video";
+    sw.dataset.video = video ? "1" : "";
+  }
+  function openDetail(p, video) {
+    current = p;
+    showMedia(p, video && p.video);
+    $("vm-brand").innerHTML = esc(p.brand) + (p.movement ? ` · <span class="mov">${esc(p.movement)}</span>` : "");
+    $("vm-title").textContent = p.model;
+    $("vm-price").textContent = p.price ? fmt(p.price) : "Consultar";
+    $("vm-eta").innerHTML = eta(p.days);
+    const specs = [["Referencia", p.ref], ["Color", p.color], ["Para", p.gender], ["Mecanismo", p.movement],
+      ["Material de la caja", p.caseMaterial], ["Material del pulso", p.material]].filter((s) => s[1]);
+    $("vm-specs").innerHTML = specs.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("");
+    $("vm-specs").hidden = !specs.length;
+    $("vm-desc").textContent = p.desc || "";
+    const w = $("vm-wa");
+    w.href = wa(p.soldOut ? `Hola MILOCK, vi que el ${p.brand} ${p.model} está agotado. ¿Me avisan cuando vuelva?` : orderMsg(p));
+    w.textContent = p.soldOut ? "Avísame cuando llegue" : "Pedir por WhatsApp";
+    modal.showModal();
+  }
+  function closeDetail() { media.innerHTML = ""; if (modal.open) modal.close(); }
+  $("vm-close").addEventListener("click", closeDetail);
+  $("vm-switch").addEventListener("click", (e) => { if (current) showMedia(current, !e.currentTarget.dataset.video); });
+  modal.addEventListener("click", (e) => { if (e.target === modal) closeDetail(); });
   modal.addEventListener("close", () => { media.innerHTML = ""; });
   grid.addEventListener("click", (e) => {
-    const b = e.target.closest(".play"); if (!b) return;
+    const b = e.target.closest("[data-i]"); if (!b) return;
     const p = SHOWN[+b.dataset.i]; if (!p) return;
-    media.innerHTML = videoHTML(p.video);
-    document.getElementById("vm-title").textContent = p.brand + " " + p.model;
-    document.getElementById("vm-wa").href = wa(orderMsg(p));
-    modal.showModal();
+    openDetail(p, b.classList.contains("play"));
   });
 
   const orderMsg = (p) => `Hola MILOCK, me interesa el ${p.brand} ${p.model}${p.ref ? " (Ref. " + p.ref + ")" : ""}${p.price ? " de " + fmt(p.price) : ""}. ¿Me das más información?`;
@@ -204,24 +234,48 @@
     const msg = orderMsg(p);
     const play = p.video ? `<button class="play" type="button" data-i="${i}" aria-label="Ver video del ${esc(p.brand + " " + p.model)}"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>Ver video</button>` : "";
     return `<article class="card${p.soldOut ? " agotado" : ""}">
-      <div class="img">${tag ? `<span class="tag">${esc(tag)}</span>` : ""}${img}${play}</div>
+      <div class="img" data-i="${i}">${tag ? `<span class="tag">${esc(tag)}</span>` : ""}${img}${play}</div>
       <div class="body">
         <div class="brandname">${esc(p.brand)}${p.movement ? ` · <span class="mov">${esc(p.movement)}</span>` : ""}</div>
-        <h3>${esc(p.model)}</h3>
-        ${p.ref || p.material ? `<div class="ref">${[p.material, p.ref && "Ref. " + p.ref].filter(Boolean).map(esc).join(" · ")}</div>` : ""}
+        <h3 data-i="${i}">${esc(p.model)}</h3>
+        ${p.ref || p.color ? `<div class="ref">${[p.color, p.ref && "Ref. " + p.ref].filter(Boolean).map(esc).join(" · ")}</div>` : ""}
         <div class="row">
           <span class="price">${p.price ? fmt(p.price) : "Consultar"}</span>
           ${eta(p.days)}
         </div>
+        <button class="more" type="button" data-i="${i}">Ver detalles</button>
         <a class="btn btn-gold" target="_blank" rel="noopener" href="${wa(p.soldOut ? `Hola MILOCK, vi que el ${p.brand} ${p.model} está agotado. ¿Me avisan cuando vuelva?` : msg)}">${p.soldOut ? "Avísame cuando llegue" : "Pedir por WhatsApp"}</a>
       </div>
     </article>`;
   }
 
+  // --- Panel de filtros plegable y orden por precio ---
+  const panel = document.getElementById("filter-panel"), toggle = document.getElementById("filter-toggle");
+  const sortEl = document.getElementById("sort");
+  toggle.addEventListener("click", () => {
+    panel.hidden = !panel.hidden;
+    toggle.setAttribute("aria-expanded", !panel.hidden);
+  });
+  sortEl.addEventListener("change", render);
+  document.getElementById("filter-clear").addEventListener("click", () => {
+    active = "Todas"; movement = "Todos"; material = "Todos";
+    renderChips(); renderMovement(); renderMaterial(); render();
+  });
+  function updateCount() {
+    const n = (active !== "Todas") + (movement !== "Todos") + (material !== "Todos");
+    const c = document.getElementById("filter-count");
+    c.hidden = !n; c.textContent = n;
+  }
+
   function render() {
+    updateCount();
     const term = q.value.trim().toLowerCase();
-    const list = SHOWN = PRODUCTS.filter((p) => matchGender(p) && matchMovement(p) && matchMaterial(p) && (active === "Todas" || p.brand === active) &&
-      (!term || [p.brand, p.model, p.ref, p.material, p.movement].join(" ").toLowerCase().includes(term)));
+    let list = PRODUCTS.filter((p) => matchGender(p) && matchMovement(p) && matchMaterial(p) && (active === "Todas" || p.brand === active) &&
+      (!term || [p.brand, p.model, p.ref, p.material, p.caseMaterial, p.color, p.movement].join(" ").toLowerCase().includes(term)));
+    const dir = sortEl.value === "asc" ? 1 : sortEl.value === "desc" ? -1 : 0;
+    // "Consultar" (sin precio) siempre al final.
+    if (dir) list = list.slice().sort((a, b) => (!a.price) - (!b.price) || dir * (a.price - b.price));
+    SHOWN = list;
     grid.innerHTML = list.length ? list.map((p, i) => card(p, i)).join("")
       : `<p class="empty">No encontramos relojes con ese nombre. Prueba con otra marca o escríbenos y lo buscamos por ti.</p>`;
   }

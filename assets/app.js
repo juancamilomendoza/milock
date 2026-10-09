@@ -109,7 +109,8 @@
       const av = norm(p.available || "si");
       p.soldOut = av === "no" || av === "agotado";
       return p;
-    }).filter((p) => p.brand && p.model).map((p, _, all) => {
+    }).map((p) => { if (!p.model) p.model = p.ref || ""; return p; })
+      .filter((p) => p.brand && p.model).map((p, _, all) => {
       // Une marcas escritas distinto ("CASIO", "casio ") bajo el primer nombre que aparece.
       p.brand = all.find((o) => norm(o.brand) === norm(p.brand)).brand;
       if (p.material) p.material = all.find((o) => norm(o.material || "") === norm(p.material)).material;
@@ -308,12 +309,31 @@
       : `<p class="empty">No encontramos relojes con ese nombre. Prueba con otra marca o escríbenos y lo buscamos por ti.</p>`;
   }
 
+  // Lee la hoja. Para un enlace de Google Sheets prueba primero la exportación CSV completa,
+  // que copia cada celda tal cual; el modo "gviz" adivina el tipo de cada columna y deja
+  // vacías las celdas que no encajan (por ejemplo un modelo "5" en una columna de texto).
+  async function fetchSheet() {
+    const id = (CFG.sheetCsvUrl.match(/spreadsheets\/d\/([\w-]{20,})/) || [])[1];
+    const urls = id && !/\/pub\?|output=csv/.test(CFG.sheetCsvUrl)
+      ? [`https://docs.google.com/spreadsheets/d/${id}/export?format=csv`, CFG.sheetCsvUrl]
+      : [CFG.sheetCsvUrl];
+    let last;
+    for (const u of urls) {
+      try {
+        const res = await fetch(u, { cache: "no-store" });
+        if (!res.ok) throw new Error(res.status);
+        const text = await res.text();
+        if (/^\s*</.test(text)) throw new Error("La respuesta no es CSV");
+        return text;
+      } catch (err) { last = err; console.warn("No se pudo leer", u, err); }
+    }
+    throw last;
+  }
+
   async function load() {
     try {
       if (!CFG.sheetCsvUrl) throw new Error("Falta sheetCsvUrl en config.js");
-      const res = await fetch(CFG.sheetCsvUrl, { cache: "no-store" });
-      if (!res.ok) throw new Error(res.status);
-      PRODUCTS = fromSheet(await res.text());
+      PRODUCTS = fromSheet(await fetchSheet());
     } catch (err) {
       console.error("No se pudo leer la Google Sheet:", err);
       grid.innerHTML = `<p class="empty">No pudimos cargar el catálogo en este momento. <a href="${wa("Hola MILOCK, quiero ver los relojes disponibles.")}" target="_blank" rel="noopener">Escríbenos por WhatsApp</a> y te mostramos los relojes disponibles.</p>`;

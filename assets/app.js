@@ -7,6 +7,23 @@
     if (a) a.href = wa("Hola MILOCK, quiero información sobre sus relojes.");
   });
 
+  // Decoración del tema de temporada (se activa con "tema" en config.js).
+  if (CFG.tema === "halloween") {
+    const bat = (x, y, s, d) => `<svg class="bat" style="left:${x}%;top:${y}%;width:${s}px;animation-delay:${d}s" viewBox="0 0 64 32" aria-hidden="true"><path fill="currentColor" d="M32 10c-2-4-1-7-1-7l-2 4c-3-1-6 0-6 0s1 3 3 5c-6-3-14-2-19 3 4-1 8 1 9 4 2-3 6-3 8-1 1-3 4-4 6-3 1 3 2 5 2 5s1-2 2-5c2-1 5 0 6 3 2-2 6-2 8 1 1-3 5-5 9-4-5-5-13-6-19-3 2-2 3-5 3-5s-3-1-6 0l-2-4s1 3-1 7z"/></svg>`;
+    const pumpkin = `<svg class="pumpkin" viewBox="0 0 64 60" aria-hidden="true"><path d="M30 6c0-4 4-6 7-5-3 2-4 4-4 8z" fill="#5b7a2e"/><ellipse cx="32" cy="36" rx="28" ry="22" fill="#ff7a1a"/><ellipse cx="32" cy="36" rx="12" ry="22" fill="#ff8f3d"/><path d="M18 30l6 6h-8zM46 30l-6 6h8zM20 46c6 5 18 5 24 0l-4 1-2-3-3 3-3-3-3 3-3-3-2 3z" fill="#2a1200"/></svg>`;
+    const hero = document.querySelector(".hero");
+    if (hero) {
+      hero.insertAdjacentHTML("afterbegin", `<div class="hw-deco" aria-hidden="true"><div class="moon"></div>${bat(56, 12, 70, 0)}${bat(70, 34, 48, 1.2)}${bat(84, 20, 60, 2.1)}${bat(62, 66, 40, .6)}</div>`);
+      // Logos en blanco y negro durante Halloween.
+      document.querySelectorAll('img[src$="logo-vertical-oscuro.png"]').forEach((img) => { img.src = "assets/logos/logo-vertical-blanco.png"; });
+      const eb = hero.querySelector(".eyebrow");
+      if (eb) eb.textContent = "Especial Halloween · Cali, Colombia";
+      const ctas = hero.querySelector(".ctas");
+      if (ctas) ctas.insertAdjacentHTML("afterend", `<div class="hw-pumpkins" aria-hidden="true">${pumpkin}${pumpkin}${pumpkin}</div>`);
+    }
+    document.body.insertAdjacentHTML("afterbegin", `<div class="hw-banner">${pumpkin}<span>Temporada de Halloween en MILOCK · Escríbenos y te asesoramos por WhatsApp</span>${pumpkin}</div>`);
+  }
+
 
   const fmt = (n) => "$" + n.toLocaleString("es-CO");
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));

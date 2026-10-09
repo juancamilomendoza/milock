@@ -203,3 +203,31 @@ dialog#video-modal::backdrop{background:rgba(10,18,24,.78)}
 .vm-thumbs img{width:100%;height:100%;object-fit:cover;display:block}
 .vm-thumbs svg{width:22px;height:22px}
 .pcount{position:absolute;left:12px;bottom:12px;font-size:11px;font-weight:700;background:rgba(31,47,58,.82);color:#fff;padding:4px 9px;border-radius:999px}
+
+/* ===== Tema de temporada: Halloween (config.js -> tema: "halloween") ===== */
+html:root.tema-halloween{
+  --navy:#1c0f2b; --gold:#FF7A1A; --gold-deep:#FF9446; --on-gold:#1a0b02;
+  --bg:#120b19; --surface:#1d1428; --fg:#F4EEF9; --muted:#B9A8CB; --line:#35264a;
+  --dial-bg:#261a34; --chip:#2b1e3b; --logo-light:none; --logo-dark:block; color-scheme:dark;
+}
+.tema-halloween .hero{background:radial-gradient(ellipse at 75% 20%,#3b1f57 0%,#1c0f2b 55%,#120b19 100%)}
+.tema-halloween .hero .sand{border-color:rgba(255,122,26,.18)}
+.tema-halloween .hero .sand::after{border-color:rgba(255,122,26,.14)}
+.tema-halloween .hero p.lead{color:#d7c8e6}
+.tema-halloween .hero .wrap{position:relative;z-index:1}
+.hw-deco{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.hw-deco .moon{position:absolute;right:6%;top:12%;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff6d8,#f5d78a 60%,#d9a84a);box-shadow:0 0 60px 18px rgba(255,214,120,.25);opacity:.85}
+.hw-deco .bat{position:absolute;color:#050208;filter:drop-shadow(0 0 6px rgba(255,122,26,.35));animation:hw-fly 5s ease-in-out infinite}
+@keyframes hw-fly{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-14px) rotate(4deg)}}
+.hw-pumpkins{display:flex;gap:10px;margin-top:26px}
+.hw-pumpkins .pumpkin{width:38px;height:auto}
+.hw-pumpkins .pumpkin:nth-child(2){width:30px;margin-top:8px}
+.hw-banner{display:flex;align-items:center;justify-content:center;gap:10px;background:#FF7A1A;color:#1a0b02;font-size:12.5px;font-weight:700;padding:7px 16px;text-align:center;letter-spacing:.02em}
+.hw-banner .pumpkin{width:18px;height:auto;flex:none}
+.hw-banner .pumpkin path{fill:#1a0b02}.hw-banner .pumpkin ellipse{fill:#1a0b02}
+.tema-halloween .card:hover{box-shadow:0 14px 34px -14px rgba(255,122,26,.45)}
+.tema-halloween .chip[aria-pressed="true"],.tema-halloween .seg .chip[aria-pressed="true"]{background:#FF7A1A;border-color:#FF7A1A;color:#1a0b02}
+.tema-halloween .step .n{color:#1a0b02}
+.tema-halloween footer{background:#0d0713}
+@media (max-width:860px){.hw-deco .moon{display:none}.hw-deco .bat{opacity:.7}}
+@media (prefers-reduced-motion:reduce){.hw-deco .bat{animation:none}}

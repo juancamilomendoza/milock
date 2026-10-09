@@ -9,14 +9,14 @@
 
   // Productos de ejemplo: se muestran solo mientras no haya Google Sheet configurada.
   const SAMPLE = [
-    { brand: "Casio", model: "G-Shock GA-2100", material: "Resina", caseMaterial: "Resina y fibra de carbono", color: "Negro", desc: "Caja octagonal delgada, resistente a golpes y al agua hasta 200 m. Luz LED y hora mundial.", movement: "Pila", ref: "GA-2100-1A1", price: 520000, days: "Inmediata", gender: "Caballero", dial: "#1d1f22", strap: "#1d1f22", round: false, tag: "Más pedido" },
-    { brand: "Seiko", model: "5 Sports Automático", material: "Acero", caseMaterial: "Acero inoxidable", color: "Azul", movement: "Automático", ref: "SRPD55", price: 1350000, days: "8–12", gender: "Caballero", dial: "#24364a", strap: "#8f969c", round: true },
-    { brand: "Citizen", model: "Eco-Drive Chandler", material: "Cuero", movement: "Solar", ref: "BM8180-03E", price: 890000, days: "Inmediata", gender: "Caballero", dial: "#2f3a2a", strap: "#5a3d26", round: true },
-    { brand: "Fossil", model: "Grant Cronógrafo", material: "Cuero", caseMaterial: "Acero inoxidable", color: "Crema", movement: "Pila", ref: "FS4735", price: 760000, days: "Inmediata", gender: "Dama", dial: "#f1ede4", strap: "#6b4528", round: true },
-    { brand: "MVMT", model: "Classic Black Tan", material: "Cuero", movement: "Pila", ref: "D-MM01-BLBR", price: 690000, days: "8–12", gender: "Unisex", dial: "#111111", strap: "#9a6a3c", round: true, tag: "Nuevo" },
-    { brand: "Bulova", model: "Marine Star", material: "Acero", movement: "Pila", ref: "98B300", price: 1180000, days: "8–12", gender: "Caballero", dial: "#173a63", strap: "#a9b0b5", round: true },
-    { brand: "Pagani Design", model: "PD-1661 Diver", material: "Acero", movement: "Automático", ref: "PD-1661", price: 450000, days: "Inmediata", gender: "Caballero", dial: "#0f4a3c", strap: "#a9b0b5", round: true },
-    { brand: "Timex", model: "Weekender", material: "Tela", movement: "Pila", ref: "TW2R42500", price: 340000, days: "8–12", gender: "Dama", dial: "#e9e4d6", strap: "#3b4d3a", round: true },
+    { brand: "Casio", model: "G-Shock GA-2100", material: "Resina", caseMaterial: "Resina y fibra de carbono", color: "Negro", desc: "Caja octagonal delgada, resistente a golpes y al agua hasta 200 m. Luz LED y hora mundial.", movement: "Pila", ref: "GA-2100-1A1", price: 520000, gender: "Caballero", dial: "#1d1f22", strap: "#1d1f22", round: false, tag: "Más pedido" },
+    { brand: "Seiko", model: "5 Sports Automático", material: "Acero", caseMaterial: "Acero inoxidable", color: "Azul", movement: "Automático", ref: "SRPD55", price: 1350000, gender: "Caballero", dial: "#24364a", strap: "#8f969c", round: true },
+    { brand: "Citizen", model: "Eco-Drive Chandler", material: "Cuero", movement: "Solar", ref: "BM8180-03E", price: 890000, gender: "Caballero", dial: "#2f3a2a", strap: "#5a3d26", round: true },
+    { brand: "Fossil", model: "Grant Cronógrafo", material: "Cuero", caseMaterial: "Acero inoxidable", color: "Crema", movement: "Pila", ref: "FS4735", price: 760000, gender: "Dama", dial: "#f1ede4", strap: "#6b4528", round: true },
+    { brand: "MVMT", model: "Classic Black Tan", material: "Cuero", movement: "Pila", ref: "D-MM01-BLBR", price: 690000, gender: "Unisex", dial: "#111111", strap: "#9a6a3c", round: true, tag: "Nuevo" },
+    { brand: "Bulova", model: "Marine Star", material: "Acero", movement: "Pila", ref: "98B300", price: 1180000, gender: "Caballero", dial: "#173a63", strap: "#a9b0b5", round: true },
+    { brand: "Pagani Design", model: "PD-1661 Diver", material: "Acero", movement: "Automático", ref: "PD-1661", price: 450000, gender: "Caballero", dial: "#0f4a3c", strap: "#a9b0b5", round: true },
+    { brand: "Timex", model: "Weekender", material: "Tela", movement: "Pila", ref: "TW2R42500", price: 340000, gender: "Dama", dial: "#e9e4d6", strap: "#3b4d3a", round: true },
   ];
 
   const fmt = (n) => "$" + n.toLocaleString("es-CO");

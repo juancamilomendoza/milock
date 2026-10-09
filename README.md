@@ -21,7 +21,6 @@ La página lee los productos de una Google Sheet publicada como CSV. Columnas (l
 | Referencia | GA-2100-1A1 | Opcional |
 | Color | Negro | Opcional, se muestra en la tarjeta |
 | Precio | 520000 | Sin puntos o con ellos, da igual |
-| Entrega | Inmediata / 8–12 | "Inmediata" muestra "Entrega inmediata"; un número o rango muestra "días" |
 | Género | Caballero / Dama / Unisex | Unisex aparece en ambos filtros |
 | Material De La Caja | Acero inoxidable | Se muestra en la ficha de detalle |
 | Material Del Pulso | Acero / Cuero / Caucho | Crea el filtro por material |

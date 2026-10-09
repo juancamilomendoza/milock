@@ -22,6 +22,7 @@ La página lee los productos de una Google Sheet publicada como CSV. Columnas (l
 | Precio | 520000 | Sin puntos o con ellos, da igual |
 | Entrega | Inmediata / 8–12 | "Inmediata" muestra "Entrega inmediata"; un número o rango muestra "días" |
 | Género | Caballero / Dama / Unisex | Unisex aparece en ambos filtros |
+| Mecanismo | Automático / Pila / Solar | Crea el filtro por mecanismo y se muestra junto a la marca |
 | Foto | enlace de la imagen | Sirve un enlace de Google Drive compartido como "Cualquier persona con el enlace" |
 | Video | casio-ga2100.mp4 | Opcional. Nombre del archivo subido a `videos/`, o enlace de YouTube o Google Drive |
 | Disponible | Sí / No | "No" muestra el reloj como agotado |

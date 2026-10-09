@@ -33,7 +33,7 @@ La página lee los productos de una Google Sheet publicada como CSV. Columnas (l
 
 `plantilla-catalogo.csv` trae estas columnas listas para importar en Google Sheets.
 
-Para conectarla: en la hoja, Archivo > Compartir > Publicar en la web > CSV, copiar el enlace y pegarlo en `sheetCsvUrl` dentro de `config.js`. Mientras ese campo esté vacío, la página muestra productos de ejemplo.
+La hoja se conecta en `sheetCsvUrl` dentro de `config.js` y debe estar compartida como "Cualquier persona con el enlace: Lector" (nunca Editor).
 
 ## Publicación
 

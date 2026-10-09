@@ -167,7 +167,9 @@
     materialEl.innerHTML = ["Todos", ...kinds].map((k) => `<button class="chip" type="button" aria-pressed="${k === material}" data-m="${esc(k)}">${esc(k)}</button>`).join("");
   }
   const matchMaterial = (p) => material === "Todos" || p.material === material;
-  const matchGender = (p) => gender === "Todos" || norm(p.gender || "unisex") === "unisex" || norm(p.gender) === norm(gender);
+  // "Unisex", "Ambos" o "Caballero y Dama" aparecen en los dos filtros.
+  const isUnisex = (g) => { const n = norm(g || "unisex"); return n === "unisex" || n === "ambos" || (n.includes("caballero") && n.includes("dama")); };
+  const matchGender = (p) => gender === "Todos" || isUnisex(p.gender) || norm(p.gender) === norm(gender);
 
   // --- Videos: archivo en la carpeta videos/, enlace de YouTube o de Google Drive ---
   function videoHTML(v) {

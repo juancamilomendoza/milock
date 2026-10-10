@@ -90,6 +90,48 @@
     return m ? "https://lh3.googleusercontent.com/d/" + m[1] : u;
   }
 
+  // Muchas fotos traen espacio transparente de más hacia un lado. Se recorta ese borde
+  // para que el reloj quede centrado. Si el servidor de la foto no lo permite, se deja la foto tal cual.
+  const trimCache = new Map();
+  function trimmed(src) {
+    if (!trimCache.has(src)) trimCache.set(src, new Promise((ok) => {
+      const im = new Image();
+      im.crossOrigin = "anonymous";
+      im.onload = () => { try { ok(trimImage(im)); } catch (e) { ok(null); } };
+      im.onerror = () => ok(null);
+      im.src = src;
+    }));
+    return trimCache.get(src);
+  }
+  function trimImage(im) {
+    const W = im.naturalWidth, H = im.naturalHeight, k = Math.min(1, 240 / Math.max(W, H));
+    const w = Math.max(1, Math.round(W * k)), h = Math.max(1, Math.round(H * k));
+    const c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    const ctx = c.getContext("2d");
+    ctx.drawImage(im, 0, 0, w, h);
+    const d = ctx.getImageData(0, 0, w, h).data;
+    let l = w, t = h, r = -1, b = -1;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      if (d[(y * w + x) * 4 + 3] > 12) { if (x < l) l = x; if (x > r) r = x; if (y < t) t = y; if (y > b) b = y; }
+    }
+    if (r < 0) return null;
+    l = Math.max(0, l - 1); t = Math.max(0, t - 1); r = Math.min(w - 1, r + 1); b = Math.min(h - 1, b + 1);
+    if (l === 0 && t === 0 && r === w - 1 && b === h - 1) return null;
+    const sx = l / k, sy = t / k, sw = (r - l + 1) / k, sh = (b - t + 1) / k, m = Math.min(1, 1000 / Math.max(sw, sh));
+    const o = document.createElement("canvas");
+    o.width = Math.round(sw * m); o.height = Math.round(sh * m);
+    o.getContext("2d").drawImage(im, sx, sy, sw, sh, 0, 0, o.width, o.height);
+    return o.toDataURL("image/webp", 0.92);
+  }
+  function centerImages(root) {
+    root.querySelectorAll("img[data-trim]").forEach((img) => {
+      const src = img.getAttribute("src");
+      const go = () => trimmed(src).then((u) => { if (u && img.getAttribute("src") === src) img.src = u; });
+      if (img.complete && img.naturalWidth) go(); else img.addEventListener("load", go, { once: true });
+    });
+  }
+
   function fromSheet(text) {
     const [header, ...rows] = parseCSV(text);
     const keys = header.map((h) => COLS[norm(h)]);
@@ -207,7 +249,8 @@
     const s = slides[slide];
     media.classList.toggle("is-video", s.type === "video");
     media.innerHTML = s.type === "video" ? videoHTML(current.video)
-      : s.type === "photo" ? `<img src="${esc(s.src)}" alt="${esc(current.brand + " " + current.model)}">` : watchSVG(current);
+      : s.type === "photo" ? `<img data-trim src="${esc(s.src)}" alt="${esc(current.brand + " " + current.model)}">` : watchSVG(current);
+    centerImages(media);
     $("vm-thumbs").querySelectorAll("button").forEach((b, j) => b.setAttribute("aria-current", j === slide));
   }
   function showMedia(p, video) {
@@ -216,7 +259,8 @@
     const many = slides.length > 1;
     $("vm-prev").hidden = $("vm-next").hidden = $("vm-thumbs").hidden = !many;
     $("vm-thumbs").innerHTML = many ? slides.map((s, j) => `<button type="button" data-s="${j}" aria-label="${s.type === "video" ? "Ver video" : "Ver foto " + (j + 1)}">${
-      s.type === "photo" ? `<img src="${esc(s.src)}" alt="" loading="lazy">` : s.type === "video" ? `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>` : ""}</button>`).join("") : "";
+      s.type === "photo" ? `<img data-trim src="${esc(s.src)}" alt="" loading="lazy">` : s.type === "video" ? `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>` : ""}</button>`).join("") : "";
+    centerImages($("vm-thumbs"));
     showSlide(video && p.video ? slides.length - 1 : 0);
   }
   $("vm-prev").addEventListener("click", () => showSlide(slide - 1));
@@ -265,7 +309,7 @@
     : fmt(p.price) + (p.discount ? ` <s class="was">${fmt(p.listPrice)}</s>` : "");
   let SHOWN = [];
   function card(p, i) {
-    const img = p.photo ? `<img src="${esc(p.photo)}" alt="${esc(p.brand + " " + p.model)}" loading="lazy">` : watchSVG(p);
+    const img = p.photo ? `<img data-trim src="${esc(p.photo)}" alt="${esc(p.brand + " " + p.model)}" loading="lazy">` : watchSVG(p);
     const count = p.photos && p.photos.length > 1 ? `<span class="pcount">${p.photos.length} fotos</span>` : "";
     const tag = p.soldOut ? "Agotado" : p.tag;
     const msg = orderMsg(p);
@@ -315,6 +359,7 @@
     SHOWN = list;
     grid.innerHTML = list.length ? list.map((p, i) => card(p, i)).join("")
       : `<p class="empty">No encontramos relojes con ese nombre. Prueba con otra marca o escríbenos y lo buscamos por ti.</p>`;
+    centerImages(grid);
   }
 
   // Lee la hoja. Para un enlace de Google Sheets prueba primero la exportación CSV completa,

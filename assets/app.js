@@ -81,7 +81,7 @@
   }
 
   const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z]/g, "");
-  const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", entrega: "days", tiempodeentrega: "days", genero: "gender", para: "gender", mecanismo: "movement", material: "material", correa: "material", materialdelpulso: "material", pulso: "material", materialdelacaja: "caseMaterial", caja: "caseMaterial", color: "color", descripcion: "desc", movimiento: "movement", tipo: "movement", video: "video", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag", descuento: "discount", dcto: "discount", oferta: "discount" };
+  const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", entrega: "days", tiempodeentrega: "days", genero: "gender", para: "gender", mecanismo: "movement", material: "material", correa: "material", materialdelpulso: "material", pulso: "material", materialdelacaja: "caseMaterial", caja: "caseMaterial", color: "color", descripcion: "desc", movimiento: "movement", tipo: "movement", video: "video", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag", destacado: "featured", destacados: "featured", destacar: "featured", descuento: "discount", dcto: "discount", oferta: "discount" };
 
   // Convierte enlaces de Google Drive a una imagen directa.
   function photoUrl(u) {
@@ -161,6 +161,8 @@
       p.color = cap(p.color);
       const av = norm(p.available || "si");
       p.soldOut = av === "no" || av === "agotado";
+      const ft = norm(p.featured || "");
+      p.featured = !!ft && ft !== "no";
       return p;
     }).map((p) => { if (!p.model) p.model = p.ref || ""; return p; })
       .filter((p) => p.brand && p.model).map((p, _, all) => {
@@ -480,6 +482,63 @@
   $("cart-clear").addEventListener("click", () => { cart = []; saveCart(); renderCart(); });
   $("vm-add").addEventListener("click", (e) => { if (current) addToCart(current, e.currentTarget); });
 
+  // --- Banner de destacados: relojes con "Sí" en la columna Destacado ---
+  let FEAT = [], featI = 0, featTimer = null;
+  const track = $("feat-track");
+  function renderFeatured() {
+    FEAT = PRODUCTS.filter((p) => p.featured);
+    $("destacados").hidden = !FEAT.length;
+    if (!FEAT.length) return;
+    track.innerHTML = FEAT.map((p, i) => `<article class="feat-slide">
+      <div class="feat-img" data-fd="${i}">${p.discount && !p.soldOut ? `<span class="off">-${p.discount}%</span>` : ""}${p.photo ? `<img data-trim src="${esc(p.photo)}" alt="${esc(p.brand + " " + p.model)}">` : watchSVG(p)}</div>
+      <div class="feat-txt">
+        <div class="eyebrow">Destacado${p.tag ? " · " + esc(p.tag) : ""}</div>
+        <div class="feat-brand">${esc(p.brand)}${p.movement ? ` · ${esc(p.movement)}` : ""}</div>
+        <h2>${esc(p.model)}</h2>
+        <div class="price">${p.soldOut ? "Agotado" : priceHTML(p)}</div>
+        <div class="feat-actions">
+          <button class="btn btn-gold" type="button" data-fd="${i}">Ver detalles</button>
+          ${p.soldOut ? "" : `<button class="btn btn-ghost" type="button" data-fa="${i}">Agregar al carrito</button>`}
+        </div>
+      </div>
+    </article>`).join("");
+    centerImages(track);
+    const many = FEAT.length > 1;
+    $("feat-prev").hidden = $("feat-next").hidden = !many;
+    $("feat-dots").innerHTML = many ? FEAT.map((p, i) => `<button type="button" data-fi="${i}" aria-label="Ver ${esc(p.brand + " " + p.model)}"></button>`).join("") : "";
+    featGo(0);
+    autoFeat();
+  }
+  function featGo(i, smooth) {
+    featI = (i + FEAT.length) % FEAT.length;
+    track.scrollTo({ left: featI * track.clientWidth, behavior: smooth ? "smooth" : "auto" });
+    $("feat-dots").querySelectorAll("button").forEach((b, j) => b.setAttribute("aria-current", j === featI));
+  }
+  function autoFeat() {
+    clearInterval(featTimer);
+    if (FEAT.length > 1 && !matchMedia("(prefers-reduced-motion: reduce)").matches) featTimer = setInterval(() => featGo(featI + 1, true), 6000);
+  }
+  $("feat-prev").addEventListener("click", () => { featGo(featI - 1, true); autoFeat(); });
+  $("feat-next").addEventListener("click", () => { featGo(featI + 1, true); autoFeat(); });
+  $("destacados").addEventListener("click", (e) => {
+    const d = e.target.closest("[data-fd]"), a = e.target.closest("[data-fa]"), dot = e.target.closest("[data-fi]");
+    if (d) openDetail(FEAT[+d.dataset.fd]);
+    else if (a) addToCart(FEAT[+a.dataset.fa], a);
+    else if (dot) { featGo(+dot.dataset.fi, true); autoFeat(); }
+  });
+  // Al deslizar con el dedo, actualiza el punto activo y reinicia el avance automático.
+  let featScroll;
+  track.addEventListener("scroll", () => {
+    clearTimeout(featScroll);
+    featScroll = setTimeout(() => {
+      const i = Math.round(track.scrollLeft / track.clientWidth);
+      if (i !== featI) { featI = i; $("feat-dots").querySelectorAll("button").forEach((b, j) => b.setAttribute("aria-current", j === featI)); autoFeat(); }
+    }, 120);
+  });
+  ["mouseenter", "focusin"].forEach((ev) => $("destacados").addEventListener(ev, () => clearInterval(featTimer)));
+  ["mouseleave", "focusout"].forEach((ev) => $("destacados").addEventListener(ev, autoFeat));
+  addEventListener("resize", () => FEAT.length && featGo(featI));
+
   async function load() {
     try {
       if (!CFG.sheetCsvUrl) throw new Error("Falta sheetCsvUrl en config.js");
@@ -490,6 +549,7 @@
       return;
     }
     syncCart();
+    renderFeatured();
     renderChips();
     renderMovement();
     renderMaterial();

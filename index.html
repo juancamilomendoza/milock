@@ -36,6 +36,10 @@
       <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 2.9 2.9 0 0 0-.9 2.2 5 5 0 0 0 1.1 2.7 11.5 11.5 0 0 0 4.4 3.9c1.6.7 2.3.8 3.1.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg>
       <span>Escríbenos</span>
     </a>
+    <button class="cart-btn" type="button" id="cart-open" aria-label="Ver carrito">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1 13H5L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
+      <span class="cart-n" id="cart-n" hidden>0</span>
+    </button>
   </div>
 </header>
 
@@ -166,8 +170,24 @@
       <dl class="specs" id="vm-specs"></dl>
       <p class="vm-desc" id="vm-desc"></p>
       <div class="vm-actions">
+        <button class="btn btn-line" type="button" id="vm-add">Agregar al carrito</button>
         <a class="btn btn-gold" id="vm-wa" target="_blank" rel="noopener" href="#">Pedir por WhatsApp</a>
       </div>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="cart" class="cart" aria-label="Tu carrito">
+  <div class="cart-box">
+    <div class="cart-head">
+      <h3>Tu carrito</h3>
+      <button class="vm-close" type="button" id="cart-close" aria-label="Cerrar">×</button>
+    </div>
+    <ul class="cart-list" id="cart-list"></ul>
+    <div class="cart-foot" id="cart-foot">
+      <div class="cart-total"><span id="cart-units"></span><b id="cart-total"></b></div>
+      <a class="btn btn-gold" id="cart-send" target="_blank" rel="noopener" href="#">Enviar pedido por WhatsApp</a>
+      <button class="cart-clear" type="button" id="cart-clear">Vaciar carrito</button>
     </div>
   </div>
 </dialog>

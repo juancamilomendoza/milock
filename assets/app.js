@@ -291,6 +291,7 @@
     const w = $("vm-wa");
     w.href = wa(p.soldOut ? `Hola MILOCK, vi que el ${p.brand} ${p.model} está agotado. ¿Me avisan cuando vuelva?` : orderMsg(p));
     w.textContent = p.soldOut ? "Avísame cuando llegue" : "Pedir por WhatsApp";
+    $("vm-add").hidden = p.soldOut;
     modal.showModal();
   }
   function closeDetail() { media.innerHTML = ""; if (modal.open) modal.close(); }
@@ -298,6 +299,8 @@
   modal.addEventListener("click", (e) => { if (e.target === modal) closeDetail(); });
   modal.addEventListener("close", () => { media.innerHTML = ""; });
   grid.addEventListener("click", (e) => {
+    const add = e.target.closest("[data-add]");
+    if (add) { const p = SHOWN[+add.dataset.add]; if (p) addToCart(p, add); return; }
     const b = e.target.closest("[data-i]"); if (!b) return;
     const p = SHOWN[+b.dataset.i]; if (!p) return;
     openDetail(p, b.classList.contains("play"));
@@ -330,6 +333,7 @@
           ${eta(p.days)}
         </div>
         <button class="more" type="button" data-i="${i}">Ver detalles</button>
+        ${p.soldOut ? "" : `<button class="btn btn-line add" type="button" data-add="${i}">Agregar al carrito</button>`}
         <a class="btn btn-gold" target="_blank" rel="noopener" href="${wa(p.soldOut ? `Hola MILOCK, vi que el ${p.brand} ${p.model} está agotado. ¿Me avisan cuando vuelva?` : msg)}">${p.soldOut ? "Avísame cuando llegue" : "Pedir por WhatsApp"}</a>
       </div>
     </article>`;
@@ -388,6 +392,94 @@
     throw last;
   }
 
+  // --- Carrito: hasta 5 unidades por reloj, se guarda en el navegador y se envía completo por WhatsApp ---
+  const MAX = 5, CART_KEY = "milock-carrito";
+  const keyOf = (p) => [p.brand, p.model, p.ref].map((s) => norm(s || "")).join("|");
+  let cart = [];
+  try { cart = JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch (e) { cart = []; }
+  const saveCart = () => { try { localStorage.setItem(CART_KEY, JSON.stringify(cart.map(({ k, q }) => ({ k, q })))); } catch (e) {} };
+  const cartDlg = $("cart");
+  // Une lo guardado con el catálogo actual (precios al día; quita relojes que ya no están o se agotaron).
+  function syncCart() {
+    cart = cart.map((it) => ({ k: it.k, q: Math.min(MAX, Math.max(1, it.q | 0)), p: PRODUCTS.find((p) => keyOf(p) === it.k) }))
+      .filter((it) => it.p && !it.p.soldOut);
+    saveCart();
+    renderCart();
+  }
+  function addToCart(p, btn) {
+    const k = keyOf(p);
+    let it = cart.find((x) => x.k === k);
+    let msg = "Agregado ✓";
+    if (!it) cart.push(it = { k, q: 1, p });
+    else if (it.q < MAX) it.q++;
+    else msg = "Máximo " + MAX;
+    saveCart();
+    renderCart();
+    if (btn) {
+      const old = btn.textContent;
+      btn.textContent = msg; btn.disabled = true;
+      setTimeout(() => { btn.textContent = old; btn.disabled = false; }, 1300);
+    }
+  }
+  function cartMsg() {
+    const lines = cart.map((it) => {
+      const p = it.p, ref = p.ref ? ` (Ref. ${p.ref})` : "";
+      const val = p.price ? ` = ${fmt(p.price * it.q)}${p.discount ? ` (con ${p.discount}% de descuento)` : ""}` : " = precio por consultar";
+      return `• ${it.q} x ${p.brand} ${p.model}${ref}${val}`;
+    });
+    const units = cart.reduce((n, it) => n + it.q, 0), total = cart.reduce((n, it) => n + it.p.price * it.q, 0);
+    return `Hola MILOCK, quiero hacer este pedido:\n\n${lines.join("\n")}\n\nTotal: ${fmt(total)} (${units} ${units === 1 ? "reloj" : "relojes"})` +
+      (cart.some((it) => !it.p.price) ? "\nAlgunos precios están por consultar." : "") + "\n\n¿Me ayudan con el pedido?";
+  }
+  function renderCart() {
+    if (cart.some((it) => !it.p)) cart = cart.filter((it) => it.p);
+    const units = cart.reduce((n, it) => n + it.q, 0);
+    const n = $("cart-n");
+    n.textContent = units; n.hidden = !units;
+    $("cart-open").setAttribute("aria-label", units ? `Ver carrito (${units})` : "Ver carrito");
+    const list = $("cart-list");
+    $("cart-foot").hidden = !cart.length;
+    if (!cart.length) { list.innerHTML = `<li class="cart-empty">Tu carrito está vacío. Agrega los relojes que te gusten y nos envías el pedido completo por WhatsApp.</li>`; return; }
+    list.innerHTML = cart.map((it, j) => {
+      const p = it.p;
+      const pic = p.photo ? `<img data-trim src="${esc(p.photo)}" alt="">` : watchSVG(p);
+      return `<li class="cart-item">
+        <div class="ci-img">${pic}</div>
+        <div class="ci-info">
+          <div class="brandname">${esc(p.brand)}</div>
+          <div class="ci-name">${esc(p.model)}${p.ref ? ` <span>Ref. ${esc(p.ref)}</span>` : ""}</div>
+          <div class="ci-row">
+            <div class="qty" role="group" aria-label="Cantidad">
+              <button type="button" data-q="${j}" data-d="-1" aria-label="Quitar uno"${it.q <= 1 ? " disabled" : ""}>−</button>
+              <span>${it.q}</span>
+              <button type="button" data-q="${j}" data-d="1" aria-label="Agregar uno"${it.q >= MAX ? " disabled" : ""}>+</button>
+            </div>
+            <b>${p.price ? fmt(p.price * it.q) : "Consultar"}</b>
+          </div>
+          ${it.q >= MAX ? `<div class="ci-max">Máximo ${MAX} unidades por reloj</div>` : ""}
+        </div>
+        <button class="ci-del" type="button" data-del="${j}" aria-label="Quitar ${esc(p.brand + " " + p.model)}">×</button>
+      </li>`;
+    }).join("");
+    centerImages(list);
+    const total = cart.reduce((n, it) => n + it.p.price * it.q, 0);
+    $("cart-units").textContent = `${units} ${units === 1 ? "reloj" : "relojes"}`;
+    $("cart-total").textContent = fmt(total);
+    $("cart-send").href = wa(cartMsg());
+  }
+  $("cart-list").addEventListener("click", (e) => {
+    const q = e.target.closest("[data-q]"), d = e.target.closest("[data-del]");
+    if (q) { const it = cart[+q.dataset.q]; it.q = Math.min(MAX, Math.max(1, it.q + +q.dataset.d)); }
+    else if (d) cart.splice(+d.dataset.del, 1);
+    else return;
+    saveCart(); renderCart();
+  });
+  $("cart-open").addEventListener("click", () => { renderCart(); cartDlg.showModal(); });
+  $("cart-close").addEventListener("click", () => cartDlg.close());
+  cartDlg.addEventListener("click", (e) => { if (e.target === cartDlg) cartDlg.close(); });
+  $("cart-clear").addEventListener("click", () => { cart = []; saveCart(); renderCart(); });
+  $("vm-add").addEventListener("click", (e) => { if (current) addToCart(current, e.currentTarget); });
+
   async function load() {
     try {
       if (!CFG.sheetCsvUrl) throw new Error("Falta sheetCsvUrl en config.js");
@@ -397,6 +489,7 @@
       grid.innerHTML = `<p class="empty">No pudimos cargar el catálogo en este momento. <a href="${wa("Hola MILOCK, quiero ver los relojes disponibles.")}" target="_blank" rel="noopener">Escríbenos por WhatsApp</a> y te mostramos los relojes disponibles.</p>`;
       return;
     }
+    syncCart();
     renderChips();
     renderMovement();
     renderMaterial();

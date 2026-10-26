@@ -187,6 +187,30 @@
   </div>
 </dialog>
 
+<dialog id="cine" class="cine" aria-label="Video del reloj">
+  <div class="cine-bg" aria-hidden="true"></div>
+  <button class="cine-x" type="button" id="cine-close" aria-label="Cerrar video">×</button>
+  <div class="cine-wrap">
+    <div class="cine-main">
+      <button class="cine-nav" type="button" id="cine-prev" aria-label="Video anterior" hidden>‹</button>
+      <div class="cine-stage" id="cine-stage"></div>
+      <button class="cine-nav" type="button" id="cine-next" aria-label="Video siguiente" hidden>›</button>
+    </div>
+    <div class="cine-info">
+      <div>
+        <div class="cine-brand" id="cine-brand"></div>
+        <div class="cine-title" id="cine-title"></div>
+      </div>
+      <div class="price" id="cine-price"></div>
+      <div class="cine-actions">
+        <button class="btn btn-ghost" type="button" id="cine-add">Agregar al carrito</button>
+        <a class="btn btn-gold" id="cine-wa" target="_blank" rel="noopener" href="#">Pedir por WhatsApp</a>
+      </div>
+    </div>
+    <div class="cine-list-wrap"><span class="cine-count" id="cine-count"></span><div class="cine-list" id="cine-list"></div></div>
+  </div>
+</dialog>
+
 <dialog id="cart" class="cart" aria-label="Tu carrito">
   <div class="cart-box">
     <div class="cart-head">

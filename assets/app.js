@@ -1,5 +1,6 @@
 (function () {
   const CFG = window.MILOCK_CONFIG || {};
+  const $ = (id) => document.getElementById(id);
   const WA = CFG.whatsapp || "573128544398";
   const wa = (msg) => "https://wa.me/" + WA + "?text=" + encodeURIComponent(msg);
   ["wa-top", "wa-foot", "wa-float"].forEach((id) => {
@@ -153,6 +154,9 @@
       // Varias fotos en la misma celda: una por línea, o separadas por coma, espacio o punto y coma.
       p.photos = (p.photo || "").split(/[\s,;|]+/).map(photoUrl).filter(Boolean);
       p.photo = p.photos[0] || "";
+      // Varios videos en la misma celda, igual que las fotos.
+      p.videos = (p.video || "").split(/[\s,;|]+/).map((v) => v.trim()).filter(Boolean);
+      p.video = p.videos[0] || "";
       p.gender = p.gender || "Unisex";
       p.movement = movementName(p.movement);
       const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
@@ -235,19 +239,94 @@
   const isUnisex = (g) => { const n = norm(g || "unisex"); return n === "unisex" || n === "ambos" || (n.includes("caballero") && n.includes("dama")); };
   const matchGender = (p) => gender === "Todos" || isUnisex(p.gender) || norm(p.gender) === norm(gender);
 
-  // --- Videos: archivo en la carpeta videos/, enlace de YouTube o de Google Drive ---
-  function videoHTML(v) {
-    v = (v || "").trim();
-    let m = v.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{6,})/);
-    if (m) return `<iframe src="https://www.youtube.com/embed/${m[1]}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen title="Video"></iframe>`;
+  // --- Videos: archivo en la carpeta videos/, YouTube (y Shorts), Google Drive, Instagram, TikTok o Vimeo ---
+  const PLAY = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>`;
+  function videoInfo(v) {
+    let m = v.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{11})/);
+    if (m) return { embed: `https://www.youtube.com/embed/${m[1]}?autoplay=1&rel=0&playsinline=1&modestbranding=1`,
+      thumb: `https://i.ytimg.com/vi/${m[1]}/hqdefault.jpg`, vertical: /shorts\//.test(v) };
     m = v.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]+)/);
-    if (m) return `<iframe src="https://drive.google.com/file/d/${m[1]}/preview" allow="autoplay" allowfullscreen title="Video"></iframe>`;
-    const src = /^https?:\/\//.test(v) ? v : "videos/" + v.replace(/^\/?(videos\/)?/, "");
-    return `<video src="${esc(src)}" controls autoplay playsinline></video>`;
+    if (m) return { embed: `https://drive.google.com/file/d/${m[1]}/preview`, thumb: `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`, vertical: true };
+    m = v.match(/instagram\.com\/(?:[\w.]+\/)?(reels?|p|tv)\/([\w-]+)/);
+    if (m) return { embed: `https://www.instagram.com/${m[1] === "p" ? "p" : "reel"}/${m[2]}/embed`, vertical: true, social: true };
+    m = v.match(/tiktok\.com\/.*video\/(\d+)/);
+    if (m) return { embed: `https://www.tiktok.com/embed/v2/${m[1]}`, vertical: true, social: true };
+    m = v.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+    if (m) return { embed: `https://player.vimeo.com/video/${m[1]}?autoplay=1`, vertical: false };
+    return { file: /^https?:\/\//.test(v) ? v : "videos/" + v.replace(/^\/?(videos\/)?/, "") };
   }
+  function videoHTML(v) {
+    const info = videoInfo(v);
+    if (info.file) return `<video src="${esc(info.file)}" controls autoplay playsinline></video>`;
+    return `<iframe src="${esc(info.embed)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="Video" scrolling="no"></iframe>`;
+  }
+  // Miniatura del video: imagen del servicio, primer cuadro del archivo o la foto del reloj.
+  function videoThumb(v, p) {
+    const info = videoInfo(v);
+    if (info.file) return `<video src="${esc(info.file)}#t=0.5" muted playsinline preload="metadata"></video>`;
+    if (info.thumb) return `<img src="${esc(info.thumb)}" alt="" loading="lazy" onerror="this.remove()">`;
+    return p.photo ? `<img src="${esc(p.photo)}" alt="" loading="lazy">` : "";
+  }
+
+  // --- Sala de video: pantalla completa oscura, con el reloj y sus botones debajo ---
+  const cine = document.getElementById("cine");
+  let cineP = null, cineI = 0;
+  function openCine(p, i) {
+    cineP = p;
+    cine.querySelector(".cine-bg").style.backgroundImage = p.photo ? `url("${p.photo.replace(/"/g, "%22")}")` : "";
+    $("cine-brand").textContent = p.brand + (p.ref ? " · Ref. " + p.ref : "");
+    $("cine-title").textContent = p.model + (p.color ? " · " + p.color : "");
+    $("cine-price").innerHTML = p.soldOut ? "Agotado" : priceHTML(p);
+    $("cine-add").hidden = p.soldOut;
+    $("cine-wa").href = wa(p.soldOut ? `Hola MILOCK, vi que el ${p.brand} ${p.model} está agotado. ¿Me avisan cuando vuelva?` : orderMsg(p));
+    $("cine-wa").textContent = p.soldOut ? "Avísame cuando llegue" : "Pedir por WhatsApp";
+    const many = p.videos.length > 1;
+    $("cine-prev").hidden = $("cine-next").hidden = !many;
+    $("cine-list").innerHTML = many ? p.videos.map((v, j) => `<button type="button" data-cv="${j}" aria-label="Video ${j + 1}">${videoThumb(v, p)}<span>${PLAY}</span></button>`).join("") : "";
+    if (!cine.open) cine.showModal();
+    cineGo(i || 0);
+  }
+  function cineGo(i) {
+    const n = cineP.videos.length;
+    cineI = (i + n) % n;
+    const v = cineP.videos[cineI], info = videoInfo(v);
+    const stage = $("cine-stage");
+    stage.className = "cine-stage " + (info.file ? "is-file" : info.vertical ? "is-vertical" : "is-wide") + (info.social ? " is-social" : "");
+    stage.innerHTML = videoHTML(v);
+    $("cine-count").textContent = n > 1 ? `${cineI + 1} / ${n}` : "";
+    $("cine-list").querySelectorAll("button").forEach((b, j) => b.setAttribute("aria-current", j === cineI));
+  }
+  $("cine-prev").addEventListener("click", () => cineGo(cineI - 1));
+  $("cine-next").addEventListener("click", () => cineGo(cineI + 1));
+  $("cine-list").addEventListener("click", (e) => { const b = e.target.closest("[data-cv]"); if (b) cineGo(+b.dataset.cv); });
+  $("cine-close").addEventListener("click", () => cine.close());
+  $("cine-add").addEventListener("click", (e) => { if (cineP) addToCart(cineP, e.currentTarget); });
+  cine.addEventListener("click", (e) => { if (e.target === cine || e.target.classList.contains("cine-wrap")) cine.close(); });
+  cine.addEventListener("keydown", (e) => {
+    if (!cineP || cineP.videos.length < 2) return;
+    if (e.key === "ArrowLeft") cineGo(cineI - 1);
+    if (e.key === "ArrowRight") cineGo(cineI + 1);
+  });
+  cine.addEventListener("close", () => { $("cine-stage").innerHTML = ""; });
+
+  // En computador, al pasar el mouse por una tarjeta con video subido como archivo, se ve un adelanto sin sonido.
+  function cardPreviews(root) {
+    if (!matchMedia("(hover: hover)").matches || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    root.querySelectorAll(".img[data-prev]").forEach((box) => {
+      let vid;
+      box.addEventListener("mouseenter", () => {
+        vid = document.createElement("video");
+        Object.assign(vid, { src: box.dataset.prev, muted: true, loop: true, playsInline: true, autoplay: true });
+        vid.className = "prev";
+        vid.addEventListener("playing", () => vid.classList.add("on"));
+        box.appendChild(vid);
+      });
+      box.addEventListener("mouseleave", () => { if (vid) vid.remove(); vid = null; });
+    });
+  }
+
   // --- Ficha de detalle (foto o video, características y descripción) ---
   const modal = document.getElementById("video-modal"), media = document.getElementById("vm-media");
-  const $ = (id) => document.getElementById(id);
   let current = null;
   // Galería de la ficha: fotos y, si hay, el video como última miniatura.
   let slides = [], slide = 0;
@@ -255,20 +334,20 @@
     slide = (i + slides.length) % slides.length;
     const s = slides[slide];
     media.classList.toggle("is-video", s.type === "video");
-    media.innerHTML = s.type === "video" ? videoHTML(current.video)
+    media.innerHTML = s.type === "video" ? `<button class="vposter" type="button" data-cine="${s.i}" aria-label="Reproducir video">${videoThumb(current.videos[s.i], current)}<span class="vbig">${PLAY}</span><span class="vlabel">Ver video${current.videos.length > 1 ? " " + (s.i + 1) : ""}</span></button>`
       : s.type === "photo" ? `<img data-trim src="${esc(s.src)}" alt="${esc(current.brand + " " + current.model)}">` : watchSVG(current);
     centerImages(media);
     $("vm-thumbs").querySelectorAll("button").forEach((b, j) => b.setAttribute("aria-current", j === slide));
   }
   function showMedia(p, video) {
     slides = (p.photos && p.photos.length ? p.photos.map((src) => ({ type: "photo", src })) : [{ type: "svg" }]);
-    if (p.video) slides.push({ type: "video" });
+    p.videos.forEach((v, i) => slides.push({ type: "video", i }));
     const many = slides.length > 1;
     $("vm-prev").hidden = $("vm-next").hidden = $("vm-thumbs").hidden = !many;
-    $("vm-thumbs").innerHTML = many ? slides.map((s, j) => `<button type="button" data-s="${j}" aria-label="${s.type === "video" ? "Ver video" : "Ver foto " + (j + 1)}">${
-      s.type === "photo" ? `<img data-trim src="${esc(s.src)}" alt="" loading="lazy">` : s.type === "video" ? `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>` : ""}</button>`).join("") : "";
+    $("vm-thumbs").innerHTML = many ? slides.map((s, j) => `<button type="button" data-s="${j}" aria-label="${s.type === "video" ? "Ver video " + (s.i + 1) : "Ver foto " + (j + 1)}">${
+      s.type === "photo" ? `<img data-trim src="${esc(s.src)}" alt="" loading="lazy">` : s.type === "video" ? `${videoThumb(p.videos[s.i], p)}<span class="tplay">${PLAY}</span>` : ""}</button>`).join("") : "";
     centerImages($("vm-thumbs"));
-    showSlide(video && p.video ? slides.length - 1 : 0);
+    showSlide(0);
   }
   $("vm-prev").addEventListener("click", () => showSlide(slide - 1));
   $("vm-next").addEventListener("click", () => showSlide(slide + 1));
@@ -298,9 +377,12 @@
   }
   function closeDetail() { media.innerHTML = ""; if (modal.open) modal.close(); }
   $("vm-close").addEventListener("click", closeDetail);
+  media.addEventListener("click", (e) => { const b = e.target.closest("[data-cine]"); if (b && current) openCine(current, +b.dataset.cine); });
   modal.addEventListener("click", (e) => { if (e.target === modal) closeDetail(); });
   modal.addEventListener("close", () => { media.innerHTML = ""; });
   grid.addEventListener("click", (e) => {
+    const v = e.target.closest("[data-v]");
+    if (v) { const p = SHOWN[+v.dataset.v]; if (p) openCine(p, 0); return; }
     const add = e.target.closest("[data-add]");
     if (add) { const p = SHOWN[+add.dataset.add]; if (p) addToCart(p, add); return; }
     const b = e.target.closest("[data-i]"); if (!b) return;
@@ -323,9 +405,10 @@
     const count = p.photos && p.photos.length > 1 ? `<span class="pcount">${p.photos.length} fotos</span>` : "";
     const tag = p.soldOut ? "Agotado" : p.tag;
     const msg = orderMsg(p);
-    const play = p.video ? `<button class="play" type="button" data-i="${i}" aria-label="Ver video del ${esc(p.brand + " " + p.model)}"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>Ver video</button>` : "";
+    const play = p.videos.length ? `<button class="play" type="button" data-v="${i}" aria-label="Ver video del ${esc(p.brand + " " + p.model)}">${PLAY}${p.videos.length > 1 ? p.videos.length + " videos" : "Ver video"}</button>` : "";
+    const file = p.videos.map(videoInfo).find((x) => x.file);
     return `<article class="card${p.soldOut ? " agotado" : ""}">
-      <div class="img" data-i="${i}">${tag ? `<span class="tag">${esc(tag)}</span>` : ""}${p.discount && !p.soldOut ? `<span class="off">-${p.discount}%</span>` : ""}${img}${count}${play}</div>
+      <div class="img" data-i="${i}"${file ? ` data-prev="${esc(file.file)}"` : ""}>${tag ? `<span class="tag">${esc(tag)}</span>` : ""}${p.discount && !p.soldOut ? `<span class="off">-${p.discount}%</span>` : ""}${img}${count}${play}</div>
       <div class="body">
         <div class="brandname">${esc(p.brand)}${p.movement ? ` · <span class="mov">${esc(p.movement)}</span>` : ""}</div>
         <h3 data-i="${i}">${esc(p.model)}</h3>
@@ -371,6 +454,7 @@
     grid.innerHTML = list.length ? list.map((p, i) => card(p, i)).join("")
       : `<p class="empty">No encontramos relojes con ese nombre. Prueba con otra marca o escríbenos y lo buscamos por ti.</p>`;
     centerImages(grid);
+    cardPreviews(grid);
   }
 
   // Lee la hoja. Para un enlace de Google Sheets prueba primero la exportación CSV completa,

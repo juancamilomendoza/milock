@@ -26,7 +26,7 @@ La página lee los productos de una Google Sheet publicada como CSV. Columnas (l
 | Material Del Pulso | Acero / Cuero / Caucho | Crea el filtro por material |
 | Mecanismo | Automático / Pila / Solar | Crea el filtro por mecanismo |
 | Foto | enlace de la imagen | Varias fotos: un enlace por línea dentro de la misma celda (Alt+Enter) o separados por coma. La primera es la principal. Sirven enlaces de Google Drive compartidos como "Cualquier persona con el enlace" |
-| Video | casio-ga2100.mp4 | Opcional. Nombre del archivo subido a `videos/`, o enlace de YouTube o Google Drive |
+| Video | casio-ga2100.mp4 | Opcional. Uno o varios videos (uno por línea): archivo subido a `videos/`, YouTube, Google Drive, Instagram, TikTok o Vimeo. Ver `videos/LEEME.md` |
 | Disponible | Sí / No | "No" muestra el reloj como agotado |
 | Etiqueta | Nuevo | Opcional, aparece sobre la foto |
 | Destacado | Sí | Opcional. Con "Sí", el reloj aparece en el banner de destacados arriba de la página. Vacío = no |

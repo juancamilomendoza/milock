@@ -140,7 +140,8 @@
 
   function fromSheet(text) {
     const [header, ...rows] = parseCSV(text);
-    const keys = header.map((h) => COLS[norm(h)]);
+    // Acepta variaciones del encabezado como "Videos", "Link del video" o "Fotos".
+    const keys = header.map((h) => { const n = norm(h); return COLS[n] || (/video/.test(n) ? "video" : /foto|imagen/.test(n) ? "photo" : undefined); });
     return rows.map((r) => {
       const p = {};
       keys.forEach((k, i) => { if (k) p[k] = (r[i] || "").trim(); });
@@ -155,7 +156,10 @@
       p.photos = (p.photo || "").split(/[\s,;|]+/).map(photoUrl).filter(Boolean);
       p.photo = p.photos[0] || "";
       // Varios videos en la misma celda, igual que las fotos.
-      p.videos = (p.video || "").split(/[\s,;|]+/).map((v) => v.trim()).filter(Boolean);
+      // Solo enlaces o nombres de archivo de video (.mp4, .mov, .webm); se ignora texto suelto.
+      p.videos = (p.video || "").split(/[\s,;|]+/).map((v) => v.trim())
+        .map((v) => !/^https?:\/\//i.test(v) && /^(www\.|m\.)?(youtube\.com|youtu\.be|drive\.google\.com|instagram\.com|tiktok\.com|vimeo\.com)\//i.test(v) ? "https://" + v : v)
+        .filter((v) => /^https?:\/\//i.test(v) || /\.(mp4|m4v|mov|webm)$/i.test(v));
       p.video = p.videos[0] || "";
       p.gender = p.gender || "Unisex";
       p.movement = movementName(p.movement);

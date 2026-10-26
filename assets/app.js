@@ -87,7 +87,10 @@
   function photoUrl(u) {
     u = (u || "").trim();
     const m = u.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]+)/);
-    return m ? "https://lh3.googleusercontent.com/d/" + m[1] : u;
+    // Sin tamaño, Google entrega la foto reducida; "=w2000" pide la versión grande para la ficha.
+    if (m) return "https://lh3.googleusercontent.com/d/" + m[1] + "=w2000";
+    if (/^https:\/\/lh3\.googleusercontent\.com\/d\/[\w-]+$/.test(u)) return u + "=w2000";
+    return u;
   }
 
   // Muchas fotos traen espacio transparente de más hacia un lado. Se recorta ese borde
@@ -118,11 +121,13 @@
     if (r < 0) return null;
     l = Math.max(0, l - 1); t = Math.max(0, t - 1); r = Math.min(w - 1, r + 1); b = Math.min(h - 1, b + 1);
     if (l === 0 && t === 0 && r === w - 1 && b === h - 1) return null;
-    const sx = l / k, sy = t / k, sw = (r - l + 1) / k, sh = (b - t + 1) / k, m = Math.min(1, 1000 / Math.max(sw, sh));
+    const sx = l / k, sy = t / k, sw = (r - l + 1) / k, sh = (b - t + 1) / k, m = Math.min(1, 1800 / Math.max(sw, sh));
     const o = document.createElement("canvas");
     o.width = Math.round(sw * m); o.height = Math.round(sh * m);
-    o.getContext("2d").drawImage(im, sx, sy, sw, sh, 0, 0, o.width, o.height);
-    return o.toDataURL("image/webp", 0.92);
+    const oc = o.getContext("2d");
+    oc.imageSmoothingQuality = "high";
+    oc.drawImage(im, sx, sy, sw, sh, 0, 0, o.width, o.height);
+    return o.toDataURL("image/webp", 0.95);
   }
   function centerImages(root) {
     root.querySelectorAll("img[data-trim]").forEach((img) => {

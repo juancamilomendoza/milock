@@ -396,15 +396,19 @@
 
   // --- Carrito: hasta 5 unidades por reloj, se guarda en el navegador y se envía completo por WhatsApp ---
   const MAX = 5, CART_KEY = "milock-carrito";
-  const keyOf = (p) => [p.brand, p.model, p.ref].map((s) => norm(s || "")).join("|");
+  // Cada combinación de reloj y color es una línea distinta del carrito.
+  const keyOf = (p) => [p.brand, p.model, p.ref, p.color].map((s) => norm(s || "")).join("|");
   let cart = [];
   try { cart = JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch (e) { cart = []; }
   const saveCart = () => { try { localStorage.setItem(CART_KEY, JSON.stringify(cart.map(({ k, q }) => ({ k, q })))); } catch (e) {} };
   const cartDlg = $("cart");
   // Une lo guardado con el catálogo actual (precios al día; quita relojes que ya no están o se agotaron).
   function syncCart() {
-    cart = cart.map((it) => ({ k: it.k, q: Math.min(MAX, Math.max(1, it.q | 0)), p: PRODUCTS.find((p) => keyOf(p) === it.k) }))
-      .filter((it) => it.p && !it.p.soldOut);
+    cart = cart.map((it) => {
+      // Carritos guardados antes de separar por color (sin color en la clave): se asocian al primer color.
+      const p = PRODUCTS.find((p) => keyOf(p) === it.k) || PRODUCTS.find((p) => keyOf(p).startsWith(it.k + "|"));
+      return { k: p ? keyOf(p) : it.k, q: Math.min(MAX, Math.max(1, it.q | 0)), p };
+    }).filter((it, i, all) => it.p && !it.p.soldOut && all.findIndex((o) => o.k === it.k) === i);
     saveCart();
     renderCart();
   }
@@ -425,9 +429,9 @@
   }
   function cartMsg() {
     const lines = cart.map((it) => {
-      const p = it.p, ref = p.ref ? ` (Ref. ${p.ref})` : "";
+      const p = it.p, ref = [p.ref && "Ref. " + p.ref, p.color && "color " + p.color.toLowerCase()].filter(Boolean).join(", ");
       const val = p.price ? ` = ${fmt(p.price * it.q)}${p.discount ? ` (con ${p.discount}% de descuento)` : ""}` : " = precio por consultar";
-      return `• ${it.q} x ${p.brand} ${p.model}${ref}${val}`;
+      return `• ${it.q} x ${p.brand} ${p.model}${ref ? ` (${ref})` : ""}${val}`;
     });
     const units = cart.reduce((n, it) => n + it.q, 0), total = cart.reduce((n, it) => n + it.p.price * it.q, 0);
     return `Hola MILOCK, quiero hacer este pedido:\n\n${lines.join("\n")}\n\nTotal: ${fmt(total)} (${units} ${units === 1 ? "reloj" : "relojes"})` +
@@ -450,6 +454,7 @@
         <div class="ci-info">
           <div class="brandname">${esc(p.brand)}</div>
           <div class="ci-name">${esc(p.model)}${p.ref ? ` <span>Ref. ${esc(p.ref)}</span>` : ""}</div>
+          ${p.color ? `<div class="ci-color">Color: ${esc(p.color)}</div>` : ""}
           <div class="ci-row">
             <div class="qty" role="group" aria-label="Cantidad">
               <button type="button" data-q="${j}" data-d="-1" aria-label="Quitar uno"${it.q <= 1 ? " disabled" : ""}>−</button>

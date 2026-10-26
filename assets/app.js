@@ -140,11 +140,13 @@
 
   function fromSheet(text) {
     const [header, ...rows] = parseCSV(text);
+    LAST_HEADER = header;
     // Acepta variaciones del encabezado como "Videos", "Link del video" o "Fotos".
     const keys = header.map((h) => { const n = norm(h); return COLS[n] || (/video/.test(n) ? "video" : /foto|imagen/.test(n) ? "photo" : undefined); });
     return rows.map((r) => {
       const p = {};
-      keys.forEach((k, i) => { if (k) p[k] = (r[i] || "").trim(); });
+      // Si dos columnas apuntan al mismo dato (por ejemplo "Video" y "Link del video"), se juntan en vez de pisarse.
+      keys.forEach((k, i) => { const v = (r[i] || "").trim(); if (k && v) p[k] = p[k] ? p[k] + "\n" + v : v; });
       p.price = parseInt((p.price || "").replace(/[^\d]/g, ""), 10) || 0;
       // Descuento en %: acepta "20", "20%" o "0,2". El precio mostrado ya va rebajado.
       let d = parseFloat((p.discount || "").replace(",", ".").replace(/[^\d.]/g, "")) || 0;
@@ -156,6 +158,7 @@
       p.photos = (p.photo || "").split(/[\s,;|]+/).map(photoUrl).filter(Boolean);
       p.photo = p.photos[0] || "";
       // Varios videos en la misma celda, igual que las fotos.
+      p.videoRaw = p.video || "";
       // Solo enlaces o nombres de archivo de video (.mp4, .mov, .webm); se ignora texto suelto.
       p.videos = (p.video || "").split(/[\s,;|]+/).map((v) => v.trim())
         .map((v) => !/^https?:\/\//i.test(v) && /^(www\.|m\.)?(youtube\.com|youtu\.be|drive\.google\.com|instagram\.com|tiktok\.com|vimeo\.com)\//i.test(v) ? "https://" + v : v)
@@ -464,6 +467,15 @@
   // Lee la hoja. Para un enlace de Google Sheets prueba primero la exportación CSV completa,
   // que copia cada celda tal cual; el modo "gviz" adivina el tipo de cada columna y deja
   // vacías las celdas que no encajan (por ejemplo un modelo "5" en una columna de texto).
+  // Modo revisión: abrir la página con ?revisar muestra qué leyó de la hoja en la columna Video.
+  let LAST_HEADER = [];
+  function showCheck() {
+    const rows = PRODUCTS.map((p) => `<tr><td>${esc(p.brand)} ${esc(p.model)}</td><td>${esc(p.ref || "")}</td><td>${esc(p.videoRaw || "(vacío)")}</td><td>${p.videos.length}</td></tr>`).join("");
+    document.body.insertAdjacentHTML("afterbegin", `<div class="check"><b>Revisión de la hoja</b>
+      <p>Columnas leídas: ${LAST_HEADER.map((h) => esc(h || "(sin nombre)")).join(" · ")}</p>
+      <table><tr><th>Reloj</th><th>Ref.</th><th>Lo que dice la celda Video</th><th>Videos</th></tr>${rows}</table></div>`);
+  }
+
   async function fetchSheet() {
     const id = (CFG.sheetCsvUrl.match(/spreadsheets\/d\/([\w-]{20,})/) || [])[1];
     const urls = id && !/\/pub\?|output=csv/.test(CFG.sheetCsvUrl)
@@ -643,6 +655,7 @@
     }
     syncCart();
     renderFeatured();
+    if (/[?&]revisar\b/.test(location.search)) showCheck();
     renderChips();
     renderMovement();
     renderMaterial();

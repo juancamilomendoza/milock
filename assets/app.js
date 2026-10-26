@@ -253,7 +253,7 @@
     if (m) return { embed: `https://www.youtube.com/embed/${m[1]}?autoplay=1&rel=0&playsinline=1&modestbranding=1`,
       thumb: `https://i.ytimg.com/vi/${m[1]}/hqdefault.jpg`, vertical: /shorts\//.test(v) };
     m = v.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]+)/);
-    if (m) return { embed: `https://drive.google.com/file/d/${m[1]}/preview`, thumb: `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`, vertical: true };
+    if (m) return { embed: `https://drive.google.com/file/d/${m[1]}/preview`, thumb: `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`, vertical: true, fit: true };
     m = v.match(/instagram\.com\/(?:[\w.]+\/)?(reels?|p|tv)\/([\w-]+)/);
     if (m) return { embed: `https://www.instagram.com/${m[1] === "p" ? "p" : "reel"}/${m[2]}/embed`, vertical: true, social: true };
     m = v.match(/tiktok\.com\/.*video\/(\d+)/);
@@ -299,7 +299,20 @@
     const v = cineP.videos[cineI], info = videoInfo(v);
     const stage = $("cine-stage");
     stage.className = "cine-stage " + (info.file ? "is-file" : info.vertical ? "is-vertical" : "is-wide") + (info.social ? " is-social" : "");
+    stage.style.aspectRatio = "";
     stage.innerHTML = videoHTML(v);
+    // Drive no avisa la forma del video: se toma de su miniatura para que el marco quede justo, sin franjas.
+    if (info.fit) {
+      const im = new Image();
+      im.onload = () => {
+        if (cineP.videos[cineI] !== v || !im.naturalWidth) return;
+        const r = im.naturalWidth / im.naturalHeight;
+        stage.classList.toggle("is-vertical", r < 1);
+        stage.classList.toggle("is-wide", r >= 1);
+        stage.style.aspectRatio = `${im.naturalWidth} / ${im.naturalHeight}`;
+      };
+      im.src = info.thumb;
+    }
     $("cine-count").textContent = n > 1 ? `${cineI + 1} / ${n}` : "";
     $("cine-list").querySelectorAll("button").forEach((b, j) => b.setAttribute("aria-current", j === cineI));
   }

@@ -470,6 +470,11 @@
     const dir = sortEl.value === "asc" ? 1 : sortEl.value === "desc" ? -1 : 0;
     // "Consultar" (sin precio) siempre al final.
     if (dir) list = list.slice().sort((a, b) => (!a.price) - (!b.price) || dir * (a.price - b.price));
+    // Orden "Recomendados": primero los destacados, luego los "Más pedido", después el resto en el orden de la hoja.
+    else {
+      const rank = (p) => p.featured ? 0 : /maspedid/.test(norm(p.tag || "")) ? 1 : 2;
+      list = list.map((p, i) => [p, i]).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1]).map((x) => x[0]);
+    }
     SHOWN = list;
     grid.innerHTML = list.length ? list.map((p, i) => card(p, i)).join("")
       : `<p class="empty">No encontramos relojes con ese nombre. Prueba con otra marca o escríbenos y lo buscamos por ti.</p>`;

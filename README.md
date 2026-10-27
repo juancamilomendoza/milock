@@ -40,3 +40,16 @@ La hoja se conecta en `sheetCsvUrl` dentro de `config.js` y debe estar compartid
 ## Publicación
 
 La página se publica con GitHub Pages desde la rama `main` (Settings > Pages > Deploy from a branch > main / root).
+
+## Códigos de descuento
+
+En la misma Google Sheet, una pestaña llamada **Codigos** (sin tilde) con estas columnas:
+
+| Código | Descuento | Activo |
+|---|---|---|
+| BLACK10 | 10% | Sí |
+
+- El cliente lo escribe en el carrito (no importan mayúsculas ni espacios).
+- El % se aplica al total del carrito, que ya incluye el descuento propio de cada reloj.
+- Para apagar un código, cambien Activo a "No" o borren la fila.
+- El código y el descuento aparecen en el mensaje de WhatsApp del pedido.

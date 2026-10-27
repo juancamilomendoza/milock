@@ -545,14 +545,64 @@
       setTimeout(() => { btn.textContent = old; btn.disabled = false; }, 1300);
     }
   }
+  // --- Códigos de descuento: pestaña "Codigos" de la misma hoja (Código, Descuento, Activo) ---
+  // El % del código se aplica sobre el total del carrito, que ya tiene los descuentos de cada reloj.
+  const PROMO_KEY = "milock-codigo";
+  let promo = null, CODES = null, savedCode = "";
+  try { savedCode = (JSON.parse(localStorage.getItem(PROMO_KEY)) || {}).code || ""; } catch (e) {}
+  async function loadCodes() {
+    if (CODES) return CODES;
+    const id = (CFG.sheetCsvUrl.match(/spreadsheets\/d\/([\w-]{20,})/) || [])[1];
+    if (!id) return (CODES = []);
+    const tab = CFG.codigosPestana || "Codigos";
+    const res = await fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(tab)}`, { cache: "no-store" });
+    if (!res.ok) throw new Error(res.status);
+    const [header, ...rows] = parseCSV(await res.text());
+    const h = header.map(norm);
+    const ci = h.findIndex((x) => /codigo|cupon/.test(x)), di = h.findIndex((x) => /descuento|porcentaje/.test(x)), ai = h.findIndex((x) => /activo|vigente/.test(x));
+    // Si la pestaña no existe, Google devuelve la del catálogo: sin columna Código no hay códigos.
+    if (ci < 0 || di < 0) return (CODES = []);
+    return (CODES = rows.map((r) => {
+      const raw = (r[di] || "").trim();
+      let d = parseFloat(raw.replace(",", ".").replace(/[^\d.]/g, "")) || 0;
+      if (d > 0 && d < 1 && !/%/.test(raw)) d *= 100;
+      const act = ai < 0 ? "si" : norm(r[ai] || "");
+      return { code: (r[ci] || "").trim().toUpperCase(), pct: Math.round(d), on: act !== "no" && act !== "" && act !== "false" };
+    }).filter((c) => c.code && c.pct > 0 && c.pct < 100 && c.on));
+  }
+  const promoMsg = (t, bad) => { const m = $("promo-msg"); m.textContent = t; m.classList.toggle("bad", !!bad); };
+  async function applyCode(code, quiet) {
+    code = (code || "").trim().toUpperCase().replace(/\s+/g, "");
+    if (!code) return;
+    $("promo-apply").disabled = true;
+    try {
+      const found = (await loadCodes()).find((c) => c.code.replace(/\s+/g, "") === code);
+      if (found) { promo = { code: found.code, pct: found.pct }; if (!quiet) promoMsg(`¡Listo! Tu código te da ${found.pct}% de descuento.`); }
+      else { promo = null; if (!quiet) promoMsg("Ese código no es válido o ya no está vigente.", true); }
+    } catch (e) {
+      if (!quiet) promoMsg("No pudimos revisar el código ahora. Inténtalo de nuevo o escríbenos por WhatsApp.", true);
+    }
+    $("promo-apply").disabled = false;
+    try { promo ? localStorage.setItem(PROMO_KEY, JSON.stringify({ code: promo.code })) : localStorage.removeItem(PROMO_KEY); } catch (e) {}
+    renderCart();
+  }
+  $("promo-form").addEventListener("submit", (e) => { e.preventDefault(); applyCode($("promo-input").value); });
+  $("promo-remove").addEventListener("click", () => { promo = null; try { localStorage.removeItem(PROMO_KEY); } catch (e) {} promoMsg(""); renderCart(); });
+  function totals() {
+    const sub = cart.reduce((n, it) => n + it.p.price * it.q, 0);
+    const off = promo ? Math.round(sub * promo.pct / 100) : 0;
+    return { sub, off, total: sub - off };
+  }
+
   function cartMsg() {
     const lines = cart.map((it) => {
       const p = it.p, ref = [p.ref && "Ref. " + p.ref, p.color && "color " + p.color.toLowerCase()].filter(Boolean).join(", ");
       const val = p.price ? ` = ${fmt(p.price * it.q)}${p.discount ? ` (con ${p.discount}% de descuento)` : ""}` : " = precio por consultar";
       return `• ${it.q} x ${p.brand} ${p.model}${ref ? ` (${ref})` : ""}${val}`;
     });
-    const units = cart.reduce((n, it) => n + it.q, 0), total = cart.reduce((n, it) => n + it.p.price * it.q, 0);
-    return `Hola MILOCK, quiero hacer este pedido:\n\n${lines.join("\n")}\n\nTotal: ${fmt(total)} (${units} ${units === 1 ? "reloj" : "relojes"})` +
+    const units = cart.reduce((n, it) => n + it.q, 0), t = totals();
+    const promoLines = promo && t.off ? `Subtotal: ${fmt(t.sub)}\nCódigo de descuento ${promo.code} (${promo.pct}%): -${fmt(t.off)}\n` : "";
+    return `Hola MILOCK, quiero hacer este pedido:\n\n${lines.join("\n")}\n\n${promoLines}Total: ${fmt(t.total)} (${units} ${units === 1 ? "reloj" : "relojes"})` +
       (cart.some((it) => !it.p.price) ? "\nAlgunos precios están por consultar." : "") + "\n\n¿Me ayudan con el pedido?";
   }
   function renderCart() {
@@ -587,9 +637,16 @@
       </li>`;
     }).join("");
     centerImages(list);
-    const total = cart.reduce((n, it) => n + it.p.price * it.q, 0);
     $("cart-units").textContent = `${units} ${units === 1 ? "reloj" : "relojes"}`;
-    $("cart-total").textContent = fmt(total);
+    const t = totals();
+    $("cart-total").textContent = fmt(t.total);
+    $("promo-form").hidden = !!promo;
+    $("promo-on").hidden = !promo;
+    if (promo) $("promo-label").textContent = `Código ${promo.code} · -${promo.pct}%`;
+    $("cart-sub").hidden = $("cart-off").hidden = !(promo && t.off);
+    $("cart-subtotal").textContent = fmt(t.sub);
+    $("cart-off-label").textContent = promo ? `Descuento (${promo.pct}%)` : "";
+    $("cart-off-value").textContent = "-" + fmt(t.off);
     $("cart-send").href = wa(cartMsg());
   }
   $("cart-list").addEventListener("click", (e) => {
@@ -599,7 +656,11 @@
     else return;
     saveCart(); renderCart();
   });
-  $("cart-open").addEventListener("click", () => { renderCart(); cartDlg.showModal(); });
+  $("cart-open").addEventListener("click", () => {
+    renderCart(); cartDlg.showModal();
+    // Revisa que el código siga vigente (la hoja pudo cambiar).
+    if (promo) { CODES = null; applyCode(promo.code, true); }
+  });
   $("cart-close").addEventListener("click", () => cartDlg.close());
   cartDlg.addEventListener("click", (e) => { if (e.target === cartDlg) cartDlg.close(); });
   $("cart-clear").addEventListener("click", () => { cart = []; saveCart(); renderCart(); });
@@ -672,6 +733,7 @@
       return;
     }
     syncCart();
+    if (savedCode) applyCode(savedCode, true);
     renderFeatured();
     if (/[?&]revisar\b/.test(location.search)) showCheck();
     renderChips();

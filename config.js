@@ -7,7 +7,10 @@ window.MILOCK_CONFIG = {
   sheetCsvUrl: "https://docs.google.com/spreadsheets/d/167npYkxVo2A7PC_ltUqOahxWlN7HLDQMj1K5uSyvEXk/gviz/tq?tqx=out:csv&headers=1",
 
   // Nombre de la pestaña de la misma hoja donde están los códigos de descuento (columnas: Código, Descuento, Activo).
-  codigosPestana: "Codigos",
+  codigosPestana: "CODIGOS",
+
+  // Nombre de la pestaña con la lista de relojes.
+  catalogoPestana: "LISTA",
 
   // Tema de temporada. "halloween" activa la decoración de Halloween; déjenlo en "" para volver al diseño normal.
   tema: "halloween",

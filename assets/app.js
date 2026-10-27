@@ -496,8 +496,12 @@
 
   async function fetchSheet() {
     const id = (CFG.sheetCsvUrl.match(/spreadsheets\/d\/([\w-]{20,})/) || [])[1];
+    // 1) La primera pestaña completa (export). 2) La pestaña del catálogo por su nombre. 3) El enlace de config.js.
+    // Solo se acepta una respuesta que tenga la columna Marca, por si la primera pestaña no es la del catálogo.
+    const tab = CFG.catalogoPestana || "LISTA";
     const urls = id && !/\/pub\?|output=csv/.test(CFG.sheetCsvUrl)
-      ? [`https://docs.google.com/spreadsheets/d/${id}/export?format=csv`, CFG.sheetCsvUrl]
+      ? [`https://docs.google.com/spreadsheets/d/${id}/export?format=csv`,
+         `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(tab)}`, CFG.sheetCsvUrl]
       : [CFG.sheetCsvUrl];
     let last;
     for (const u of urls) {
@@ -506,6 +510,7 @@
         if (!res.ok) throw new Error(res.status);
         const text = await res.text();
         if (/^\s*</.test(text)) throw new Error("La respuesta no es CSV");
+        if (!(parseCSV(text)[0] || []).some((h) => norm(h) === "marca")) throw new Error("Esta pestaña no tiene la columna Marca");
         return text;
       } catch (err) { last = err; console.warn("No se pudo leer", u, err); }
     }
@@ -554,7 +559,7 @@
     if (CODES) return CODES;
     const id = (CFG.sheetCsvUrl.match(/spreadsheets\/d\/([\w-]{20,})/) || [])[1];
     if (!id) return (CODES = []);
-    const tab = CFG.codigosPestana || "Codigos";
+    const tab = CFG.codigosPestana || "CODIGOS";
     const res = await fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(tab)}`, { cache: "no-store" });
     if (!res.ok) throw new Error(res.status);
     const [header, ...rows] = parseCSV(await res.text());

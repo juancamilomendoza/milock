@@ -43,7 +43,7 @@ La página se publica con GitHub Pages desde la rama `main` (Settings > Pages > 
 
 ## Códigos de descuento
 
-En la misma Google Sheet, una pestaña llamada **Codigos** (sin tilde) con estas columnas:
+En la misma Google Sheet, una pestaña llamada **CODIGOS** (la de los relojes se llama **LISTA**) con estas columnas:
 
 | Código | Descuento | Activo |
 |---|---|---|

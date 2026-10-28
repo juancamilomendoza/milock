@@ -788,7 +788,7 @@
     track.innerHTML = FEAT.map((p, i) => `<article class="feat-slide">
       <div class="feat-img" data-fd="${i}">${p.discount && !p.soldOut ? `<span class="off">-${p.discount}%</span>` : ""}${p.photo ? `<img data-trim src="${esc(p.photo)}" alt="${esc(p.brand + " " + p.model)}">` : watchSVG(p)}</div>
       <div class="feat-txt">
-        <div class="eyebrow">Destacado${p.tag && !isLast(p.tag) ? " · " + esc(p.tag) : ""}</div>${p.tag && isLast(p.tag) && !p.soldOut ? `<span class="tag last feat-last">${esc(p.tag)}</span>` : ""}
+        <div class="eyebrow">Recomendado de la semana${p.tag && !isLast(p.tag) ? " · " + esc(p.tag) : ""}</div>${p.tag && isLast(p.tag) && !p.soldOut ? `<span class="tag last feat-last">${esc(p.tag)}</span>` : ""}
         <div class="feat-brand">${esc(p.brand)}${p.movement ? ` · ${esc(p.movement)}` : ""}</div>
         <h2>${esc(p.model)}</h2>
         <div class="price">${p.soldOut ? "Agotado" : priceHTML(p)}</div>

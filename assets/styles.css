@@ -436,3 +436,13 @@ html:has(dialog.cine[open]){overflow:hidden}
 .pg-size select{font:inherit;font-weight:700;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg)}
 @media (max-width:720px){.pager{flex-direction:column}}
 #catalogo{scroll-margin-top:72px}
+
+/* Sello de originalidad */
+.orig{display:inline-flex;align-items:center;gap:12px;margin-top:26px;padding:10px 18px 10px 12px;border-radius:14px;border:1px solid rgba(228,181,77,.45);background:rgba(228,181,77,.08);color:#fff}
+.orig > svg{width:30px;height:30px;color:var(--gold);flex:none}
+.orig b{display:block;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.orig span{display:block;font-size:14px;color:#C9D4DB}
+.orig-line{display:flex;gap:10px;align-items:flex-start;max-width:52ch;margin:14px 0 0;color:var(--muted)}
+.orig-line svg{width:22px;height:22px;flex:none;color:var(--gold-deep);margin-top:1px}
+.vm-orig{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--gold-deep);margin:-4px 0 6px}
+.vm-orig svg{width:16px;height:16px}

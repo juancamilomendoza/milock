@@ -12,6 +12,9 @@ window.MILOCK_CONFIG = {
   // Nombre de la pestaña con la lista de relojes.
   catalogoPestana: "LISTA",
 
+  // Vista de vendedores (página/?vendedores). Huella de la clave, no la clave: para cambiarla pídanselo a Claude.
+  claveVendedores: "602884189b637eea5271916bbed95df935cce19e33ec09bcd269d68fdb5b7578",
+
   // Tema de temporada. "halloween" activa la decoración de Halloween; déjenlo en "" para volver al diseño normal.
   tema: "halloween",
 };

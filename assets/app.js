@@ -82,7 +82,7 @@
   }
 
   const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z]/g, "");
-  const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", entrega: "days", tiempodeentrega: "days", genero: "gender", para: "gender", mecanismo: "movement", material: "material", correa: "material", materialdelpulso: "material", pulso: "material", materialdelacaja: "caseMaterial", caja: "caseMaterial", color: "color", descripcion: "desc", movimiento: "movement", tipo: "movement", video: "video", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag", destacado: "featured", destacados: "featured", destacar: "featured", descuento: "discount", dcto: "discount", oferta: "discount" };
+  const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", entrega: "days", tiempodeentrega: "days", genero: "gender", para: "gender", mecanismo: "movement", material: "material", correa: "material", materialdelpulso: "material", pulso: "material", materialdelacaja: "caseMaterial", caja: "caseMaterial", color: "color", descripcion: "desc", movimiento: "movement", tipo: "movement", video: "video", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag", entregainmediata: "immediate", inmediata: "immediate", inmediato: "immediate", destacado: "featured", destacados: "featured", destacar: "featured", descuento: "discount", dcto: "discount", oferta: "discount" };
 
   // Convierte enlaces de Google Drive a una imagen directa.
   function photoUrl(u) {
@@ -172,6 +172,8 @@
       p.color = cap(p.color);
       const av = norm(p.available || "si");
       p.soldOut = av === "no" || av === "agotado";
+      const im = norm(p.immediate || "");
+      p.immediate = !!im && im !== "no";
       const ft = norm(p.featured || "");
       p.featured = !!ft && ft !== "no";
       return p;
@@ -424,11 +426,12 @@
     const img = p.photo ? `<img data-trim src="${esc(p.photo)}" alt="${esc(p.brand + " " + p.model)}" loading="lazy">` : watchSVG(p);
     const count = p.photos && p.photos.length > 1 ? `<span class="pcount">${p.photos.length} fotos</span>` : "";
     const tag = p.soldOut ? "Agotado" : p.tag;
+    const sv = SELLER ? `<span class="sv-badge ${p.immediate ? "yes" : "no"}">${p.immediate ? "Entrega inmediata" : "Sin stock inmediato"}</span>` : "";
     const msg = orderMsg(p);
     const play = p.videos.length ? `<button class="play" type="button" data-v="${i}" aria-label="Ver video del ${esc(p.brand + " " + p.model)}">${PLAY}${p.videos.length > 1 ? p.videos.length + " videos" : "Ver video"}</button>` : "";
     const file = p.videos.map(videoInfo).find((x) => x.file);
     return `<article class="card${p.soldOut ? " agotado" : ""}">
-      <div class="img" data-i="${i}"${file ? ` data-prev="${esc(file.file)}"` : ""}>${tag ? `<span class="tag">${esc(tag)}</span>` : ""}${p.discount && !p.soldOut ? `<span class="off">-${p.discount}%</span>` : ""}${img}${count}${play}</div>
+      ${sv}<div class="img" data-i="${i}"${file ? ` data-prev="${esc(file.file)}"` : ""}>${tag ? `<span class="tag">${esc(tag)}</span>` : ""}${p.discount && !p.soldOut ? `<span class="off">-${p.discount}%</span>` : ""}${img}${count}${play}</div>
       <div class="body">
         <div class="brandname">${esc(p.brand)}${p.movement ? ` · <span class="mov">${esc(p.movement)}</span>` : ""}</div>
         <h3 data-i="${i}">${esc(p.model)}</h3>
@@ -475,7 +478,9 @@
       const rank = (p) => p.featured ? 0 : /maspedid/.test(norm(p.tag || "")) ? 1 : 2;
       list = list.map((p, i) => [p, i]).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1]).map((x) => x[0]);
     }
+    if (SELLER && sellerOnly) list = list.filter((p) => p.immediate && !p.soldOut);
     SHOWN = list;
+    if (SELLER) $("sv-count").textContent = `${PRODUCTS.filter((p) => p.immediate && !p.soldOut).length} relojes para entrega inmediata`;
     grid.innerHTML = list.length ? list.map((p, i) => card(p, i)).join("")
       : `<p class="empty">No encontramos relojes con ese nombre. Prueba con otra marca o escríbenos y lo buscamos por ti.</p>`;
     centerImages(grid);
@@ -728,7 +733,41 @@
   ["mouseleave", "focusout"].forEach((ev) => $("destacados").addEventListener(ev, autoFeat));
   addEventListener("resize", () => FEAT.length && featGo(featI));
 
+  // --- Vista de vendedores: solo con ?vendedores en la dirección y la clave. No hay ningún enlace público a ella. ---
+  let SELLER = false, sellerOnly = true;
+  async function sha(t) {
+    const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("milock:" + t));
+    return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("");
+  }
+  async function sellerGate() {
+    if (!/[?&]vendedores\b/.test(location.search) || !CFG.claveVendedores) return;
+    let ok = false;
+    try { ok = sessionStorage.getItem("milock-vend") === CFG.claveVendedores; } catch (e) {}
+    if (!ok) {
+      document.body.insertAdjacentHTML("beforeend", `<div class="sv-gate" id="sv-gate"><form id="sv-form"><b>Vista de vendedores</b>
+        <input type="password" id="sv-pass" placeholder="Clave" autocomplete="current-password" aria-label="Clave"><button class="btn btn-gold">Entrar</button>
+        <p id="sv-err" role="status"></p></form></div>`);
+      ok = await new Promise((done) => {
+        $("sv-form").addEventListener("submit", async (e) => {
+          e.preventDefault();
+          if (await sha($("sv-pass").value.trim()) === CFG.claveVendedores) done(true);
+          else $("sv-err").textContent = "Clave incorrecta.";
+        });
+      });
+      $("sv-gate").remove();
+      try { sessionStorage.setItem("milock-vend", CFG.claveVendedores); } catch (e) {}
+    }
+    SELLER = true;
+    document.documentElement.classList.add("vendedores");
+    document.querySelector("#catalogo .wrap").insertAdjacentHTML("afterbegin", `<div class="sv-bar">
+      <div><b>Vista de vendedores</b><span id="sv-count"></span></div>
+      <label><input type="checkbox" id="sv-only" checked> Solo entrega inmediata</label></div>`);
+    $("sv-only").addEventListener("change", (e) => { sellerOnly = e.target.checked; render(); });
+    document.getElementById("catalogo").scrollIntoView();
+  }
+
   async function load() {
+    await sellerGate();
     try {
       if (!CFG.sheetCsvUrl) throw new Error("Falta sheetCsvUrl en config.js");
       PRODUCTS = fromSheet(await fetchSheet());

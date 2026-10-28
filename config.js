@@ -15,6 +15,17 @@ window.MILOCK_CONFIG = {
   // Vista de vendedores (página/?vendedores). Huella de la clave, no la clave: para cambiarla pídanselo a Claude.
   claveVendedores: "99e3a13288b215635a5b341b839c1cfcd1083ddfabc3c60d882d02fda43ba790",
 
+  // Orden del catálogo en "Recomendados", de arriba hacia abajo. Cada línea es un grupo; "+" significa que debe cumplir las dos cosas.
+  // Palabras posibles: destacado, inmediata (entrega inmediata), maspedido, ultimaunidad, top. Lo que no entre en ningún grupo va al final.
+  orden: [
+    "destacado + inmediata",
+    "destacado",
+    "maspedido + inmediata",
+    "maspedido",
+    "ultimaunidad",
+    "top",
+  ],
+
   // Tema de temporada. "halloween" activa la decoración de Halloween; déjenlo en "" para volver al diseño normal.
   tema: "halloween",
 };

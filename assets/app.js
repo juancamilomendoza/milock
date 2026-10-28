@@ -454,6 +454,15 @@
   const priceHTML = (p) => !p.price ? "Consultar"
     : fmt(p.price) + (p.discount ? ` <s class="was">${fmt(p.listPrice)}</s>` : "");
   const isLast = (t) => /ultimaunidad|ultimasunidades/.test(norm(t || ""));
+  const CHECK = {
+    destacado: (p) => p.featured,
+    inmediata: (p) => p.immediate,
+    maspedido: (p) => /maspedid/.test(norm(p.tag || "")),
+    ultimaunidad: (p) => isLast(p.tag),
+    top: (p) => p.top,
+  };
+  const RULES = (CFG.orden || ["destacado + inmediata", "destacado", "maspedido + inmediata", "maspedido", "ultimaunidad", "top"])
+    .map((r) => String(r).split("+").map(norm).filter(Boolean));
   let SHOWN = [];
   function card(p, i) {
     const img = p.photo ? `<img data-trim src="${esc(p.photo)}" alt="${esc(p.brand + " " + p.model)}" loading="lazy">` : watchSVG(p);
@@ -539,9 +548,14 @@
     const dir = sortEl.value === "asc" ? 1 : sortEl.value === "desc" ? -1 : 0;
     // "Consultar" (sin precio) siempre al final.
     if (dir) list = list.slice().sort((a, b) => (!a.price) - (!b.price) || dir * (a.price - b.price));
-    // Orden "Recomendados": primero los destacados, luego los "Más pedido", después el resto en el orden de la hoja.
+    // Orden "Recomendados": grupos de prioridad de config.js (orden), luego el resto; los agotados al final.
+    // Dentro de cada grupo se respeta el orden de la hoja.
     else {
-      const rank = (p) => p.featured ? 0 : /maspedid/.test(norm(p.tag || "")) ? 1 : 2;
+      const rank = (p) => {
+        if (p.soldOut) return RULES.length + 1;
+        const i = RULES.findIndex((r) => r.every((c) => CHECK[c] && CHECK[c](p)));
+        return i < 0 ? RULES.length : i;
+      };
       list = list.map((p, i) => [p, i]).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1]).map((x) => x[0]);
     }
     if (SELLER && sellerOnly) list = list.filter((p) => p.immediate && !p.soldOut);

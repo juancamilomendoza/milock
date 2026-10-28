@@ -476,9 +476,9 @@
     c.hidden = !n; c.textContent = n;
   }
 
-  // --- Paginación: 10, 20 o 50 relojes por página (se recuerda en el navegador) ---
-  let page = 1, perPage = 20;
-  try { perPage = [10, 20, 50].includes(+localStorage.getItem("milock-por-pagina")) ? +localStorage.getItem("milock-por-pagina") : 20; } catch (e) {}
+  // --- Paginación: 12, 24 o 48 relojes por página (múltiplos de 2, 3 y 4 columnas) (se recuerda en el navegador) ---
+  let page = 1, perPage = 24;
+  try { perPage = [12, 24, 48].includes(+localStorage.getItem("milock-por-pagina")) ? +localStorage.getItem("milock-por-pagina") : 24; } catch (e) {}
   function pagerHTML(total, pages) {
     const from = (page - 1) * perPage + 1, to = Math.min(total, page * perPage);
     const nums = [];
@@ -492,7 +492,7 @@
         ${nums.map((n) => n === "…" ? `<span>…</span>` : `<button type="button" data-pg="${n}"${n === page ? ' aria-current="page"' : ""}>${n}</button>`).join("")}
         <button type="button" data-pg="${page + 1}" aria-label="Página siguiente"${page >= pages ? " disabled" : ""}>›</button>
       </div>` : ""}
-      <label class="pg-size">Ver <select id="pg-size">${[10, 20, 50].map((n) => `<option value="${n}"${n === perPage ? " selected" : ""}>${n}</option>`).join("")}</select> por página</label>`;
+      <label class="pg-size">Ver <select id="pg-size">${[12, 24, 48].map((n) => `<option value="${n}"${n === perPage ? " selected" : ""}>${n}</option>`).join("")}</select> por página</label>`;
   }
   const pager = $("pager");
   pager.addEventListener("click", (e) => {

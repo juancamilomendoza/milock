@@ -13,7 +13,7 @@ window.MILOCK_CONFIG = {
   catalogoPestana: "LISTA",
 
   // Vista de vendedores (página/?vendedores). Huella de la clave, no la clave: para cambiarla pídanselo a Claude.
-  claveVendedores: "a0b7136428d6a2100625a569fc0d356815e717dcc5057cf1d475718f0f11b79f",
+  claveVendedores: "99e3a13288b215635a5b341b839c1cfcd1083ddfabc3c60d882d02fda43ba790",
 
   // Tema de temporada. "halloween" activa la decoración de Halloween; déjenlo en "" para volver al diseño normal.
   tema: "halloween",

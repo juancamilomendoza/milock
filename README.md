@@ -30,6 +30,7 @@ La página lee los productos de una Google Sheet publicada como CSV. Columnas (l
 | Disponible | Sí / No | "No" muestra el reloj como agotado |
 | Etiqueta | Nuevo | Opcional, aparece sobre la foto |
 | Destacado | Sí | Opcional. Con "Sí", el reloj aparece en el banner de destacados arriba de la página. Vacío = no |
+| Top | Sí | Opcional. Los relojes con "Sí" aparecen al tocar el filtro "Top" del catálogo |
 | Entrega inmediata | Sí | Opcional, solo para la vista de vendedores (`?vendedores`). No se muestra a los clientes |
 | Descuento | 20% | Opcional. Porcentaje de descuento: la página muestra el precio ya rebajado y el original tachado |
 | Descripción | Texto libre | Se muestra en la ficha de detalle |

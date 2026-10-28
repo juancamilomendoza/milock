@@ -417,3 +417,8 @@ html:has(dialog.cine[open]){overflow:hidden}
 .promo-bar b{font-weight:800;letter-spacing:.03em}
 .pb-copy{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:rgba(0,0,0,.14)}
 .promo-bar:hover .pb-copy{background:rgba(0,0,0,.24)}
+
+/* Filtro Top */
+.top-chip{display:inline-flex;align-items:center;gap:6px;font-weight:700}
+.top-chip svg{width:14px;height:14px;color:var(--gold-deep)}
+.top-chip[aria-pressed="true"] svg{color:inherit}

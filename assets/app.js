@@ -82,7 +82,7 @@
   }
 
   const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z]/g, "");
-  const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", entrega: "days", tiempodeentrega: "days", genero: "gender", para: "gender", mecanismo: "movement", material: "material", correa: "material", materialdelpulso: "material", pulso: "material", materialdelacaja: "caseMaterial", caja: "caseMaterial", color: "color", descripcion: "desc", movimiento: "movement", tipo: "movement", video: "video", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag", entregainmediata: "immediate", inmediata: "immediate", inmediato: "immediate", destacado: "featured", destacados: "featured", destacar: "featured", descuento: "discount", dcto: "discount", oferta: "discount" };
+  const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", entrega: "days", tiempodeentrega: "days", genero: "gender", para: "gender", mecanismo: "movement", material: "material", correa: "material", materialdelpulso: "material", pulso: "material", materialdelacaja: "caseMaterial", caja: "caseMaterial", color: "color", descripcion: "desc", movimiento: "movement", tipo: "movement", video: "video", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag", top: "top", entregainmediata: "immediate", inmediata: "immediate", inmediato: "immediate", destacado: "featured", destacados: "featured", destacar: "featured", descuento: "discount", dcto: "discount", oferta: "discount" };
 
   // Convierte enlaces de Google Drive a una imagen directa.
   function photoUrl(u) {
@@ -174,6 +174,8 @@
       p.soldOut = av === "no" || av === "agotado";
       const im = norm(p.immediate || "");
       p.immediate = !!im && im !== "no";
+      const tp = norm(p.top || "");
+      p.top = !!tp && tp !== "no";
       const ft = norm(p.featured || "");
       p.featured = !!ft && ft !== "no";
       return p;
@@ -211,6 +213,10 @@
     render();
   });
   q.addEventListener("input", render);
+  // Filtro "Top": solo los relojes con Sí en la columna Top. El botón aparece si hay al menos uno.
+  let onlyTop = false;
+  const topChip = document.getElementById("top-chip");
+  topChip.addEventListener("click", () => { onlyTop = !onlyTop; topChip.setAttribute("aria-pressed", onlyTop); render(); });
   const genderEl = document.getElementById("gender");
   genderEl.addEventListener("click", (e) => {
     const b = e.target.closest(".chip"); if (!b) return;
@@ -469,7 +475,7 @@
   function render() {
     updateCount();
     const term = q.value.trim().toLowerCase();
-    let list = PRODUCTS.filter((p) => matchGender(p) && matchMovement(p) && matchMaterial(p) && (active === "Todas" || p.brand === active) &&
+    let list = PRODUCTS.filter((p) => (!onlyTop || p.top) && matchGender(p) && matchMovement(p) && matchMaterial(p) && (active === "Todas" || p.brand === active) &&
       (!term || [p.brand, p.model, p.ref, p.material, p.caseMaterial, p.color, p.movement].join(" ").toLowerCase().includes(term)));
     const dir = sortEl.value === "asc" ? 1 : sortEl.value === "desc" ? -1 : 0;
     // "Consultar" (sin precio) siempre al final.
@@ -798,6 +804,7 @@
     if (savedCode) applyCode(savedCode, true);
     promoBar();
     renderFeatured();
+    topChip.hidden = !PRODUCTS.some((p) => p.top);
     if (/[?&]revisar\b/.test(location.search)) showCheck();
     renderChips();
     renderMovement();

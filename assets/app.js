@@ -1,6 +1,10 @@
 (function () {
   const CFG = window.MILOCK_CONFIG || {};
   const $ = (id) => document.getElementById(id);
+  // Al abrir o recargar, la página empieza arriba (el navegador no recuerda el scroll anterior).
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+  scrollTo(0, 0);
   const WA = CFG.whatsapp || "573128544398";
   const wa = (msg) => "https://wa.me/" + WA + "?text=" + encodeURIComponent(msg);
   ["wa-top", "wa-foot", "wa-float"].forEach((id) => {
@@ -472,7 +476,40 @@
     c.hidden = !n; c.textContent = n;
   }
 
-  function render() {
+  // --- Paginación: 10, 20 o 50 relojes por página (se recuerda en el navegador) ---
+  let page = 1, perPage = 20;
+  try { perPage = [10, 20, 50].includes(+localStorage.getItem("milock-por-pagina")) ? +localStorage.getItem("milock-por-pagina") : 20; } catch (e) {}
+  function pagerHTML(total, pages) {
+    const from = (page - 1) * perPage + 1, to = Math.min(total, page * perPage);
+    const nums = [];
+    for (let n = 1; n <= pages; n++) {
+      if (n === 1 || n === pages || Math.abs(n - page) <= 1) nums.push(n);
+      else if (nums[nums.length - 1] !== "…") nums.push("…");
+    }
+    return `<p class="pg-info">Mostrando ${from}–${to} de ${total} relojes</p>
+      ${pages > 1 ? `<div class="pg-nums">
+        <button type="button" data-pg="${page - 1}" aria-label="Página anterior"${page <= 1 ? " disabled" : ""}>‹</button>
+        ${nums.map((n) => n === "…" ? `<span>…</span>` : `<button type="button" data-pg="${n}"${n === page ? ' aria-current="page"' : ""}>${n}</button>`).join("")}
+        <button type="button" data-pg="${page + 1}" aria-label="Página siguiente"${page >= pages ? " disabled" : ""}>›</button>
+      </div>` : ""}
+      <label class="pg-size">Ver <select id="pg-size">${[10, 20, 50].map((n) => `<option value="${n}"${n === perPage ? " selected" : ""}>${n}</option>`).join("")}</select> por página</label>`;
+  }
+  const pager = $("pager");
+  pager.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-pg]"); if (!b || b.disabled) return;
+    page = +b.dataset.pg; render(true);
+    document.getElementById("catalogo").scrollIntoView({ behavior: "smooth" });
+  });
+  pager.addEventListener("change", (e) => {
+    if (e.target.id !== "pg-size") return;
+    perPage = +e.target.value;
+    try { localStorage.setItem("milock-por-pagina", perPage); } catch (er) {}
+    render();
+  });
+
+  // keepPage: true solo al cambiar de página; cualquier filtro u orden vuelve a la página 1.
+  function render(keepPage) {
+    if (keepPage !== true) page = 1;
     updateCount();
     const term = q.value.trim().toLowerCase();
     let list = PRODUCTS.filter((p) => (!onlyTop || p.top) && matchGender(p) && matchMovement(p) && matchMaterial(p) && (active === "Todas" || p.brand === active) &&
@@ -486,6 +523,11 @@
       list = list.map((p, i) => [p, i]).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1]).map((x) => x[0]);
     }
     if (SELLER && sellerOnly) list = list.filter((p) => p.immediate && !p.soldOut);
+    const pages = Math.max(1, Math.ceil(list.length / perPage));
+    page = Math.min(Math.max(1, page), pages);
+    pager.hidden = !list.length;
+    if (list.length) pager.innerHTML = pagerHTML(list.length, pages);
+    list = list.slice((page - 1) * perPage, page * perPage);
     SHOWN = list;
     if (SELLER) $("sv-count").textContent = `${PRODUCTS.filter((p) => p.immediate && !p.soldOut).length} relojes para entrega inmediata`;
     grid.innerHTML = list.length ? list.map((p, i) => card(p, i)).join("")

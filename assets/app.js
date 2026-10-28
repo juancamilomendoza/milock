@@ -265,7 +265,7 @@
     if (m) return { embed: `https://www.youtube.com/embed/${m[1]}?autoplay=1&rel=0&playsinline=1&modestbranding=1`,
       thumb: `https://i.ytimg.com/vi/${m[1]}/hqdefault.jpg`, vertical: /shorts\//.test(v) };
     m = v.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]+)/);
-    if (m) return { embed: `https://drive.google.com/file/d/${m[1]}/preview`, thumb: `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`, vertical: true, fit: true, direct: `https://drive.google.com/uc?export=download&id=${m[1]}` };
+    if (m) return { embed: `https://drive.google.com/file/d/${m[1]}/preview`, thumb: `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`, vertical: true, fit: true, direct: [`https://drive.usercontent.google.com/download?id=${m[1]}&export=download&confirm=t`, `https://drive.google.com/uc?export=download&id=${m[1]}`] };
     m = v.match(/instagram\.com\/(?:[\w.]+\/)?(reels?|p|tv)\/([\w-]+)/);
     if (m) return { embed: `https://www.instagram.com/${m[1] === "p" ? "p" : "reel"}/${m[2]}/embed`, vertical: true, social: true };
     m = v.match(/tiktok\.com\/.*video\/(\d+)/);
@@ -317,17 +317,19 @@
     // centrado y del tamaño real del video). Si Drive no entrega el archivo, se usa su reproductor de vista previa.
     if (info.direct) {
       stage.className = "cine-stage is-file";
-      stage.innerHTML = `<video src="${esc(info.direct)}" controls autoplay playsinline preload="auto"></video>`;
+      stage.innerHTML = `<video controls autoplay playsinline preload="auto">${info.direct.map((u) => `<source src="${esc(u)}">`).join("")}</video>`;
       const vid = stage.querySelector("video");
+      const srcs = vid.querySelectorAll("source");
       let done = false;
       const fallback = () => {
         if (done || cineP.videos[cineI] !== v || !cine.open) return;
         done = true;
-        stage.className = "cine-stage is-vertical";
-        drivePreview(stage, v, info);
+        stage.className = "cine-stage is-drive";
+        stage.innerHTML = videoHTML(v);
       };
       vid.addEventListener("loadedmetadata", () => { done = true; });
-      vid.addEventListener("error", fallback);
+      // Con varias fuentes el error llega en la última que falla.
+      srcs[srcs.length - 1].addEventListener("error", fallback);
       setTimeout(fallback, 7000);
     } else {
       drivePreview(stage, v, info);

@@ -421,6 +421,7 @@
   }
   const priceHTML = (p) => !p.price ? "Consultar"
     : fmt(p.price) + (p.discount ? ` <s class="was">${fmt(p.listPrice)}</s>` : "");
+  const isLast = (t) => /ultimaunidad|ultimasunidades/.test(norm(t || ""));
   let SHOWN = [];
   function card(p, i) {
     const img = p.photo ? `<img data-trim src="${esc(p.photo)}" alt="${esc(p.brand + " " + p.model)}" loading="lazy">` : watchSVG(p);
@@ -431,7 +432,7 @@
     const play = p.videos.length ? `<button class="play" type="button" data-v="${i}" aria-label="Ver video del ${esc(p.brand + " " + p.model)}">${PLAY}${p.videos.length > 1 ? p.videos.length + " videos" : "Ver video"}</button>` : "";
     const file = p.videos.map(videoInfo).find((x) => x.file);
     return `<article class="card${p.soldOut ? " agotado" : ""}">
-      ${sv}<div class="img" data-i="${i}"${file ? ` data-prev="${esc(file.file)}"` : ""}>${tag ? `<span class="tag">${esc(tag)}</span>` : ""}${p.discount && !p.soldOut ? `<span class="off">-${p.discount}%</span>` : ""}${img}${count}${play}</div>
+      ${sv}<div class="img" data-i="${i}"${file ? ` data-prev="${esc(file.file)}"` : ""}>${tag ? `<span class="tag${isLast(tag) ? " last" : ""}">${esc(tag)}</span>` : ""}${p.discount && !p.soldOut ? `<span class="off">-${p.discount}%</span>` : ""}${img}${count}${play}</div>
       <div class="body">
         <div class="brandname">${esc(p.brand)}${p.movement ? ` · <span class="mov">${esc(p.movement)}</span>` : ""}</div>
         <h3 data-i="${i}">${esc(p.model)}</h3>
@@ -560,10 +561,11 @@
   const PROMO_KEY = "milock-codigo";
   let promo = null, CODES = null, savedCode = "";
   try { savedCode = (JSON.parse(localStorage.getItem(PROMO_KEY)) || {}).code || ""; } catch (e) {}
-  async function loadCodes() {
-    if (CODES) return CODES;
+  // Se pide una sola vez (lo usan el carrito y la barra de promoción).
+  function loadCodes() { return CODES || (CODES = fetchCodes().catch((e) => { CODES = null; throw e; })); }
+  async function fetchCodes() {
     const id = (CFG.sheetCsvUrl.match(/spreadsheets\/d\/([\w-]{20,})/) || [])[1];
-    if (!id) return (CODES = []);
+    if (!id) return [];
     const tab = CFG.codigosPestana || "CODIGOS";
     const res = await fetch(`https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(tab)}`, { cache: "no-store" });
     if (!res.ok) throw new Error(res.status);
@@ -571,8 +573,8 @@
     const h = header.map(norm);
     const ci = h.findIndex((x) => /codigo|cupon/.test(x)), di = h.findIndex((x) => /descuento|porcentaje/.test(x)), ai = h.findIndex((x) => /activo|vigente/.test(x));
     // Si la pestaña no existe, Google devuelve la del catálogo: sin columna Código no hay códigos.
-    if (ci < 0 || di < 0) return (CODES = []);
-    return (CODES = rows.map((r) => {
+    if (ci < 0 || di < 0) return [];
+    return (rows.map((r) => {
       const raw = (r[di] || "").trim();
       let d = parseFloat(raw.replace(",", ".").replace(/[^\d.]/g, "")) || 0;
       if (d > 0 && d < 1 && !/%/.test(raw)) d *= 100;
@@ -598,6 +600,22 @@
   }
   $("promo-form").addEventListener("submit", (e) => { e.preventDefault(); applyCode($("promo-input").value); });
   $("promo-remove").addEventListener("click", () => { promo = null; try { localStorage.removeItem(PROMO_KEY); } catch (e) {} promoMsg(""); renderCart(); });
+  // Barra de promoción arriba de la página con el código vigente. Al tocarla se copia el código.
+  async function promoBar() {
+    let c;
+    try { c = (await loadCodes())[0]; } catch (e) { return; }
+    if (!c) return;
+    const html = `<button type="button" class="promo-bar" id="promo-bar" aria-label="Copiar el código ${esc(c.code)}">
+      <span>Usa el código <b>${esc(c.code)}</b> y obtén <b>${c.pct}% de descuento</b> en tu pedido</span><span class="pb-copy" id="pb-copy">Copiar</span></button>`;
+    const hw = document.querySelector(".hw-banner");
+    hw ? hw.insertAdjacentHTML("afterend", html) : document.body.insertAdjacentHTML("afterbegin", html);
+    $("promo-bar").addEventListener("click", () => {
+      try { navigator.clipboard.writeText(c.code); } catch (e) {}
+      $("promo-input").value = c.code;
+      $("pb-copy").textContent = "¡Copiado!";
+      setTimeout(() => { $("pb-copy").textContent = "Copiar"; }, 1800);
+    });
+  }
   function totals() {
     const sub = cart.reduce((n, it) => n + it.p.price * it.q, 0);
     const off = promo ? Math.round(sub * promo.pct / 100) : 0;
@@ -686,7 +704,7 @@
     track.innerHTML = FEAT.map((p, i) => `<article class="feat-slide">
       <div class="feat-img" data-fd="${i}">${p.discount && !p.soldOut ? `<span class="off">-${p.discount}%</span>` : ""}${p.photo ? `<img data-trim src="${esc(p.photo)}" alt="${esc(p.brand + " " + p.model)}">` : watchSVG(p)}</div>
       <div class="feat-txt">
-        <div class="eyebrow">Destacado${p.tag ? " · " + esc(p.tag) : ""}</div>
+        <div class="eyebrow">Destacado${p.tag && !isLast(p.tag) ? " · " + esc(p.tag) : ""}</div>${p.tag && isLast(p.tag) && !p.soldOut ? `<span class="tag last feat-last">${esc(p.tag)}</span>` : ""}
         <div class="feat-brand">${esc(p.brand)}${p.movement ? ` · ${esc(p.movement)}` : ""}</div>
         <h2>${esc(p.model)}</h2>
         <div class="price">${p.soldOut ? "Agotado" : priceHTML(p)}</div>
@@ -778,6 +796,7 @@
     }
     syncCart();
     if (savedCode) applyCode(savedCode, true);
+    promoBar();
     renderFeatured();
     if (/[?&]revisar\b/.test(location.search)) showCheck();
     renderChips();

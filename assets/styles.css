@@ -404,3 +404,16 @@ html:has(dialog.cine[open]){overflow:hidden}
 .sv-badge{display:block;text-align:center;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:6px}
 .sv-badge.yes{background:#16a34a;color:#fff}
 .sv-badge.no{background:var(--chip);color:var(--muted)}
+
+/* Etiqueta "Última unidad" */
+.tag.last{background:linear-gradient(135deg,#F5C451,#E4B54D 45%,#C9982F);color:#1F2F3A;box-shadow:0 0 0 0 rgba(228,181,77,.7);animation:lastpulse 1.8s ease-out infinite}
+.tag.last::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#C0392B;margin-right:6px;vertical-align:1px}
+@keyframes lastpulse{0%{box-shadow:0 0 0 0 rgba(228,181,77,.7)}70%{box-shadow:0 0 0 10px rgba(228,181,77,0)}100%{box-shadow:0 0 0 0 rgba(228,181,77,0)}}
+.feat-last{position:static;display:inline-block;margin-top:10px}
+@media (prefers-reduced-motion:reduce){.tag.last{animation:none}}
+
+/* Barra de promoción del código */
+.promo-bar{display:flex;width:100%;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;border:0;cursor:pointer;font:inherit;font-size:13.5px;padding:9px 16px;background:linear-gradient(90deg,var(--gold-deep),var(--gold),var(--gold-deep));color:var(--on-gold);text-align:center}
+.promo-bar b{font-weight:800;letter-spacing:.03em}
+.pb-copy{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:rgba(0,0,0,.14)}
+.promo-bar:hover .pb-copy{background:rgba(0,0,0,.24)}

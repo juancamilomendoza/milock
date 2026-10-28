@@ -265,7 +265,7 @@
     if (m) return { embed: `https://www.youtube.com/embed/${m[1]}?autoplay=1&rel=0&playsinline=1&modestbranding=1`,
       thumb: `https://i.ytimg.com/vi/${m[1]}/hqdefault.jpg`, vertical: /shorts\//.test(v) };
     m = v.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]+)/);
-    if (m) return { embed: `https://drive.google.com/file/d/${m[1]}/preview`, thumb: `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`, vertical: true, fit: true };
+    if (m) return { embed: `https://drive.google.com/file/d/${m[1]}/preview`, thumb: `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`, vertical: true, fit: true, direct: `https://drive.google.com/uc?export=download&id=${m[1]}` };
     m = v.match(/instagram\.com\/(?:[\w.]+\/)?(reels?|p|tv)\/([\w-]+)/);
     if (m) return { embed: `https://www.instagram.com/${m[1] === "p" ? "p" : "reel"}/${m[2]}/embed`, vertical: true, social: true };
     m = v.match(/tiktok\.com\/.*video\/(\d+)/);
@@ -313,6 +313,29 @@
     const stage = $("cine-stage");
     stage.className = "cine-stage " + (info.file ? "is-file" : info.vertical ? "is-vertical" : "is-wide") + (info.social ? " is-social" : "");
     stage.style.aspectRatio = "";
+    // Drive: primero se intenta el reproductor propio del navegador (botones de pausa, adelantar y pantalla completa,
+    // centrado y del tamaño real del video). Si Drive no entrega el archivo, se usa su reproductor de vista previa.
+    if (info.direct) {
+      stage.className = "cine-stage is-file";
+      stage.innerHTML = `<video src="${esc(info.direct)}" controls autoplay playsinline preload="auto"></video>`;
+      const vid = stage.querySelector("video");
+      let done = false;
+      const fallback = () => {
+        if (done || cineP.videos[cineI] !== v || !cine.open) return;
+        done = true;
+        stage.className = "cine-stage is-vertical";
+        drivePreview(stage, v, info);
+      };
+      vid.addEventListener("loadedmetadata", () => { done = true; });
+      vid.addEventListener("error", fallback);
+      setTimeout(fallback, 7000);
+    } else {
+      drivePreview(stage, v, info);
+    }
+    $("cine-count").textContent = n > 1 ? `${cineI + 1} / ${n}` : "";
+    $("cine-list").querySelectorAll("button").forEach((b, j) => b.setAttribute("aria-current", j === cineI));
+  }
+  function drivePreview(stage, v, info) {
     stage.innerHTML = videoHTML(v);
     // Drive no avisa la forma del video: se toma de su miniatura para que el marco quede justo, sin franjas.
     if (info.fit) {
@@ -326,8 +349,6 @@
       };
       im.src = info.thumb;
     }
-    $("cine-count").textContent = n > 1 ? `${cineI + 1} / ${n}` : "";
-    $("cine-list").querySelectorAll("button").forEach((b, j) => b.setAttribute("aria-current", j === cineI));
   }
   $("cine-prev").addEventListener("click", () => cineGo(cineI - 1));
   $("cine-next").addEventListener("click", () => cineGo(cineI + 1));

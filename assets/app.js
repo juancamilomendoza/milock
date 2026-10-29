@@ -86,7 +86,7 @@
   }
 
   const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z]/g, "");
-  const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", entrega: "days", tiempodeentrega: "days", genero: "gender", para: "gender", mecanismo: "movement", material: "material", correa: "material", materialdelpulso: "material", pulso: "material", materialdelacaja: "caseMaterial", caja: "caseMaterial", color: "color", descripcion: "desc", movimiento: "movement", tipo: "movement", video: "video", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag", top: "top", entregainmediata: "immediate", inmediata: "immediate", inmediato: "immediate", destacado: "featured", destacados: "featured", destacar: "featured", descuento: "discount", dcto: "discount", oferta: "discount" };
+  const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", entrega: "days", tiempodeentrega: "days", genero: "gender", para: "gender", mecanismo: "movement", material: "material", correa: "material", materialdelpulso: "material", pulso: "material", materialdelacaja: "caseMaterial", caja: "caseMaterial", color: "color", descripcion: "desc", movimiento: "movement", tipo: "movement", video: "video", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag", estado: "condition", condicion: "condition", top: "top", entregainmediata: "immediate", inmediata: "immediate", inmediato: "immediate", destacado: "featured", destacados: "featured", destacar: "featured", descuento: "discount", dcto: "discount", oferta: "discount" };
 
   // Convierte enlaces de Google Drive a una imagen directa.
   function photoUrl(u) {
@@ -178,6 +178,9 @@
       p.soldOut = av === "no" || av === "agotado";
       const im = norm(p.immediate || "");
       p.immediate = !!im && im !== "no";
+      // Estado: "Nuevo" o "Usado" (acepta "Nueva", "Usada"); vacío cuenta como nuevo.
+      const cn = norm(p.condition || "");
+      p.condition = /^usad/.test(cn) ? "usado" : "nuevo";
       const tp = norm(p.top || "");
       p.top = !!tp && tp !== "no";
       const ft = norm(p.featured || "");
@@ -218,6 +221,15 @@
   });
   q.addEventListener("input", render);
   // Filtro "Top": solo los relojes con Sí en la columna Top. El botón aparece si hay al menos uno.
+  // Filtro Nuevos / Usados: aparece solo si en la hoja hay de los dos.
+  let estado = "Todos";
+  const estadoEl = document.getElementById("estado");
+  estadoEl.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-e]"); if (!b) return;
+    estado = b.dataset.e;
+    estadoEl.querySelectorAll("[data-e]").forEach((c) => c.setAttribute("aria-pressed", c.dataset.e === estado));
+    render();
+  });
   let onlyTop = false;
   const topChip = document.getElementById("top-chip");
   topChip.addEventListener("click", () => { onlyTop = !onlyTop; topChip.setAttribute("aria-pressed", onlyTop); render(); });
@@ -545,7 +557,7 @@
     if (keepPage !== true) page = 1;
     updateCount();
     const term = q.value.trim().toLowerCase();
-    let list = PRODUCTS.filter((p) => (!onlyTop || p.top) && matchGender(p) && matchMovement(p) && matchMaterial(p) && (active === "Todas" || p.brand === active) &&
+    let list = PRODUCTS.filter((p) => (!onlyTop || p.top) && (estado === "Todos" || p.condition === estado) && matchGender(p) && matchMovement(p) && matchMaterial(p) && (active === "Todas" || p.brand === active) &&
       (!term || [p.brand, p.model, p.ref, p.material, p.caseMaterial, p.color, p.movement].join(" ").toLowerCase().includes(term)));
     const dir = sortEl.value === "asc" ? 1 : sortEl.value === "desc" ? -1 : 0;
     // "Consultar" (sin precio) siempre al final.
@@ -885,6 +897,7 @@
     promoBar();
     renderFeatured();
     topChip.hidden = !PRODUCTS.some((p) => p.top);
+    estadoEl.hidden = !(PRODUCTS.some((p) => p.condition === "usado") && PRODUCTS.some((p) => p.condition === "nuevo"));
     if (/[?&]revisar\b/.test(location.search)) showCheck();
     renderChips();
     renderMovement();

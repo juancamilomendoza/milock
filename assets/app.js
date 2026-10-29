@@ -803,7 +803,9 @@
   let FEAT = [], featI = 0, featTimer = null;
   const track = $("feat-track");
   function renderFeatured() {
-    FEAT = PRODUCTS.filter((p) => p.featured);
+    // Primero los de entrega inmediata (sin decirlo al cliente), luego el resto en el orden de la hoja.
+    FEAT = PRODUCTS.filter((p) => p.featured).map((p, i) => [p, i])
+      .sort((a, b) => (b[0].immediate && !b[0].soldOut) - (a[0].immediate && !a[0].soldOut) || a[1] - b[1]).map((x) => x[0]);
     $("destacados").hidden = !FEAT.length;
     if (!FEAT.length) return;
     track.innerHTML = FEAT.map((p, i) => `<article class="feat-slide">

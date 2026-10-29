@@ -434,9 +434,13 @@
     $("vm-price").innerHTML = priceHTML(p);
     $("vm-eta").innerHTML = eta(p.days);
     const specs = [["Referencia", p.ref], ["Color", p.color], ["Para", p.gender],
-      ["Estado", p.conditionRaw || p.condition === "usado" ? (p.condition === "usado" ? "Usado" : "Nuevo") : ""], ["Condición", p.conditionNote],
+      ["Estado", p.conditionRaw || p.condition === "usado" ? (p.condition === "usado" ? "Usado" : "Nuevo") : ""],
       ["Mecanismo", p.movement], ["Material de la caja", p.caseMaterial], ["Material del pulso", p.material]].filter((s) => s[1]);
     $("vm-orig-t").textContent = p.condition === "usado" ? "Original · usado" : "Producto original";
+    // La condición (solo usados) va justo debajo del sello.
+    const cond = p.condition === "usado" ? (p.conditionNote || "") : "";
+    $("vm-cond").textContent = cond;
+    $("vm-cond").hidden = !cond;
     $("vm-specs").innerHTML = specs.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("");
     $("vm-specs").hidden = !specs.length;
     $("vm-desc").textContent = p.desc || "";

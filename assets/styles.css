@@ -455,3 +455,4 @@ html:has(dialog.cine[open]){overflow:hidden}
 /* Relojes usados */
 .used{position:absolute;z-index:2;left:12px;top:12px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:6px;background:rgba(31,47,58,.82);color:#fff}
 .tag + .used{top:42px}
+.vm-cond{margin:-2px 0 8px 22px;font-size:13px;color:var(--muted);font-style:italic}

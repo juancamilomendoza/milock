@@ -86,7 +86,7 @@
   }
 
   const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z]/g, "");
-  const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", entrega: "days", tiempodeentrega: "days", genero: "gender", para: "gender", mecanismo: "movement", material: "material", correa: "material", materialdelpulso: "material", pulso: "material", materialdelacaja: "caseMaterial", caja: "caseMaterial", color: "color", descripcion: "desc", movimiento: "movement", tipo: "movement", video: "video", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag", estado: "condition", condicion: "condition", top: "top", entregainmediata: "immediate", inmediata: "immediate", inmediato: "immediate", destacado: "featured", destacados: "featured", destacar: "featured", descuento: "discount", dcto: "discount", oferta: "discount" };
+  const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", entrega: "days", tiempodeentrega: "days", genero: "gender", para: "gender", mecanismo: "movement", material: "material", correa: "material", materialdelpulso: "material", pulso: "material", materialdelacaja: "caseMaterial", caja: "caseMaterial", color: "color", descripcion: "desc", movimiento: "movement", tipo: "movement", video: "video", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag", estado: "condition", condicion: "conditionNote", top: "top", entregainmediata: "immediate", inmediata: "immediate", inmediato: "immediate", destacado: "featured", destacados: "featured", destacar: "featured", descuento: "discount", dcto: "discount", oferta: "discount" };
 
   // Convierte enlaces de Google Drive a una imagen directa.
   function photoUrl(u) {
@@ -179,6 +179,7 @@
       const im = norm(p.immediate || "");
       p.immediate = !!im && im !== "no";
       // Estado: "Nuevo" o "Usado" (acepta "Nueva", "Usada"); vacío cuenta como nuevo.
+      p.conditionRaw = p.condition || "";
       const cn = norm(p.condition || "");
       p.condition = /^usad/.test(cn) ? "usado" : "nuevo";
       const tp = norm(p.top || "");
@@ -432,8 +433,10 @@
     $("vm-title").textContent = p.model;
     $("vm-price").innerHTML = priceHTML(p);
     $("vm-eta").innerHTML = eta(p.days);
-    const specs = [["Referencia", p.ref], ["Color", p.color], ["Para", p.gender], ["Mecanismo", p.movement],
-      ["Material de la caja", p.caseMaterial], ["Material del pulso", p.material]].filter((s) => s[1]);
+    const specs = [["Referencia", p.ref], ["Color", p.color], ["Para", p.gender],
+      ["Estado", p.conditionRaw || p.condition === "usado" ? (p.condition === "usado" ? "Usado" : "Nuevo") : ""], ["Condición", p.conditionNote],
+      ["Mecanismo", p.movement], ["Material de la caja", p.caseMaterial], ["Material del pulso", p.material]].filter((s) => s[1]);
+    $("vm-orig-t").textContent = p.condition === "usado" ? "Original · usado" : "Producto original";
     $("vm-specs").innerHTML = specs.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("");
     $("vm-specs").hidden = !specs.length;
     $("vm-desc").textContent = p.desc || "";
@@ -458,7 +461,7 @@
     openDetail(p, b.classList.contains("play"));
   });
 
-  const orderMsg = (p) => `Hola MILOCK, me interesa el ${p.brand} ${p.model}${p.ref ? " (Ref. " + p.ref + ")" : ""}${p.price ? " de " + fmt(p.price) : ""}${p.discount ? " (con el " + p.discount + "% de descuento)" : ""}. ¿Me das más información?`;
+  const orderMsg = (p) => `Hola MILOCK, me interesa el ${p.brand} ${p.model}${p.condition === "usado" ? " usado" : ""}${p.ref ? " (Ref. " + p.ref + ")" : ""}${p.price ? " de " + fmt(p.price) : ""}${p.discount ? " (con el " + p.discount + "% de descuento)" : ""}. ¿Me das más información?`;
   function eta(d) {
     if (!d) return "";
     const icon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`;
@@ -487,7 +490,7 @@
     const play = p.videos.length ? `<button class="play" type="button" data-v="${i}" aria-label="Ver video del ${esc(p.brand + " " + p.model)}">${PLAY}${p.videos.length > 1 ? p.videos.length + " videos" : "Ver video"}</button>` : "";
     const file = p.videos.map(videoInfo).find((x) => x.file);
     return `<article class="card${p.soldOut ? " agotado" : ""}">
-      ${sv}<div class="img" data-i="${i}"${file ? ` data-prev="${esc(file.file)}"` : ""}>${tag ? `<span class="tag${isLast(tag) ? " last" : ""}">${esc(tag)}</span>` : ""}${p.discount && !p.soldOut ? `<span class="off">-${p.discount}%</span>` : ""}${img}${count}${play}</div>
+      ${sv}<div class="img" data-i="${i}"${file ? ` data-prev="${esc(file.file)}"` : ""}>${tag ? `<span class="tag${isLast(tag) ? " last" : ""}">${esc(tag)}</span>` : ""}${p.condition === "usado" ? `<span class="used">Usado</span>` : ""}${p.discount && !p.soldOut ? `<span class="off">-${p.discount}%</span>` : ""}${img}${count}${play}</div>
       <div class="body">
         <div class="brandname">${esc(p.brand)}${p.movement ? ` · <span class="mov">${esc(p.movement)}</span>` : ""}</div>
         <h3 data-i="${i}">${esc(p.model)}</h3>
@@ -724,7 +727,7 @@
     const lines = cart.map((it) => {
       const p = it.p, ref = [p.ref && "Ref. " + p.ref, p.color && "color " + p.color.toLowerCase()].filter(Boolean).join(", ");
       const val = p.price ? ` = ${fmt(p.price * it.q)}${p.discount ? ` (con ${p.discount}% de descuento)` : ""}` : " = precio por consultar";
-      return `• ${it.q} x ${p.brand} ${p.model}${ref ? ` (${ref})` : ""}${val}`;
+      return `• ${it.q} x ${p.brand} ${p.model}${p.condition === "usado" ? " usado" : ""}${ref ? ` (${ref})` : ""}${val}`;
     });
     const units = cart.reduce((n, it) => n + it.q, 0), t = totals();
     const promoLines = promo && t.off ? `Subtotal: ${fmt(t.sub)}\nCódigo de descuento ${promo.code} (${promo.pct}%): -${fmt(t.off)}\n` : "";
@@ -748,7 +751,7 @@
         <div class="ci-info">
           <div class="brandname">${esc(p.brand)}</div>
           <div class="ci-name">${esc(p.model)}${p.ref ? ` <span>Ref. ${esc(p.ref)}</span>` : ""}</div>
-          ${p.color ? `<div class="ci-color">Color: ${esc(p.color)}</div>` : ""}
+          ${p.color || p.condition === "usado" ? `<div class="ci-color">${[p.color && "Color: " + esc(p.color), p.condition === "usado" && "Usado"].filter(Boolean).join(" · ")}</div>` : ""}
           <div class="ci-row">
             <div class="qty" role="group" aria-label="Cantidad">
               <button type="button" data-q="${j}" data-d="-1" aria-label="Quitar uno"${it.q <= 1 ? " disabled" : ""}>−</button>

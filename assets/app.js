@@ -1,6 +1,10 @@
 (function () {
   const CFG = window.MILOCK_CONFIG || {};
   const $ = (id) => document.getElementById(id);
+  // Enlace "?para-ti": selección especial con solo los relojes de entrega inmediata (sin decirlo en la página).
+  const PARA_TI = /[?&]para-ti(?:[=&]|$)/.test(location.search);
+  let paraTiAll = false;
+  const HOLA = PARA_TI ? "Hola MILOCK, vi la selección especial y" : "Hola MILOCK,";
   // Al abrir o recargar, la página empieza arriba (el navegador no recuerda el scroll anterior).
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
   if (location.hash) history.replaceState(null, "", location.pathname + location.search);
@@ -465,7 +469,7 @@
     openDetail(p, b.classList.contains("play"));
   });
 
-  const orderMsg = (p) => `Hola MILOCK, me interesa el ${p.brand} ${p.model}${p.condition === "usado" ? " usado" : ""}${p.ref ? " (Ref. " + p.ref + ")" : ""}${p.price ? " de " + fmt(p.price) : ""}${p.discount ? " (con el " + p.discount + "% de descuento)" : ""}. ¿Me das más información?`;
+  const orderMsg = (p) => `${HOLA} me interesa el ${p.brand} ${p.model}${p.condition === "usado" ? " usado" : ""}${p.ref ? " (Ref. " + p.ref + ")" : ""}${p.price ? " de " + fmt(p.price) : ""}${p.discount ? " (con el " + p.discount + "% de descuento)" : ""}. ¿Me das más información?`;
   function eta(d) {
     if (!d) return "";
     const icon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`;
@@ -579,7 +583,7 @@
       };
       list = list.map((p, i) => [p, i]).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1]).map((x) => x[0]);
     }
-    if (SELLER && sellerOnly) list = list.filter((p) => p.immediate && !p.soldOut);
+    if ((SELLER && sellerOnly) || (PARA_TI && !SELLER && !paraTiAll)) list = list.filter((p) => p.immediate && !p.soldOut);
     const pages = Math.max(1, Math.ceil(list.length / perPage));
     page = Math.min(Math.max(1, page), pages);
     pager.hidden = !list.length;
@@ -735,7 +739,7 @@
     });
     const units = cart.reduce((n, it) => n + it.q, 0), t = totals();
     const promoLines = promo && t.off ? `Subtotal: ${fmt(t.sub)}\nCódigo de descuento ${promo.code} (${promo.pct}%): -${fmt(t.off)}\n` : "";
-    return `Hola MILOCK, quiero hacer este pedido:\n\n${lines.join("\n")}\n\n${promoLines}Total: ${fmt(t.total)} (${units} ${units === 1 ? "reloj" : "relojes"})` +
+    return `${HOLA} quiero hacer este pedido:\n\n${lines.join("\n")}\n\n${promoLines}Total: ${fmt(t.total)} (${units} ${units === 1 ? "reloj" : "relojes"})` +
       (cart.some((it) => !it.p.price) ? "\nAlgunos precios están por consultar." : "") + "\n\n¿Me ayudan con el pedido?";
   }
   function renderCart() {
@@ -804,7 +808,7 @@
   const track = $("feat-track");
   function renderFeatured() {
     // Primero los de entrega inmediata (sin decirlo al cliente), luego el resto en el orden de la hoja.
-    FEAT = PRODUCTS.filter((p) => p.featured).map((p, i) => [p, i])
+    FEAT = PRODUCTS.filter((p) => p.featured && (!PARA_TI || (p.immediate && !p.soldOut))).map((p, i) => [p, i])
       .sort((a, b) => (b[0].immediate && !b[0].soldOut) - (a[0].immediate && !a[0].soldOut) || a[1] - b[1]).map((x) => x[0]);
     $("destacados").hidden = !FEAT.length;
     if (!FEAT.length) return;
@@ -893,6 +897,17 @@
 
   async function load() {
     await sellerGate();
+    if (PARA_TI && !SELLER) {
+      document.querySelector("#catalogo .wrap").insertAdjacentHTML("afterbegin", `<div class="para-ti">
+        <div><b>Una selección especial para ti</b><span>Elegimos estos relojes pensando en ti. Escríbenos y te asesoramos.</span></div>
+        <button type="button" id="pt-toggle">Ver todo el catálogo</button></div>`);
+      $("pt-toggle").addEventListener("click", (e) => {
+        paraTiAll = !paraTiAll;
+        e.currentTarget.textContent = paraTiAll ? "Ver mi selección especial" : "Ver todo el catálogo";
+        render();
+        document.getElementById("catalogo").scrollIntoView({ behavior: "smooth" });
+      });
+    }
     try {
       if (!CFG.sheetCsvUrl) throw new Error("Falta sheetCsvUrl en config.js");
       PRODUCTS = fromSheet(await fetchSheet());
@@ -912,6 +927,7 @@
     renderMovement();
     renderMaterial();
     render();
+    if (PARA_TI && !SELLER) document.getElementById("catalogo").scrollIntoView();
   }
   load();
 })();

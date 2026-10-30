@@ -9,6 +9,11 @@
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
   if (location.hash) history.replaceState(null, "", location.pathname + location.search);
   scrollTo(0, 0);
+  // Google Analytics: eventos de la tienda. No se envía nada en la vista de vendedores ni en ?revisar.
+  const NO_TRACK = /[?&](vendedores|revisar)\b/.test(location.search);
+  const item = (p) => ({ item_name: p.brand + " " + p.model, item_brand: p.brand, item_variant: p.color || "", item_id: p.ref || "", price: p.price || 0 });
+  const gaEvent = (name, params) => { if (!NO_TRACK && window.gtag) gtag("event", name, Object.assign({ seccion: PARA_TI ? "para-ti" : "catalogo" }, params || {})); };
+  if (PARA_TI) gaEvent("abrir_seleccion_especial");
   const WA = CFG.whatsapp || "573128544398";
   const wa = (msg) => "https://wa.me/" + WA + "?text=" + encodeURIComponent(msg);
   ["wa-top", "wa-foot", "wa-float"].forEach((id) => {
@@ -321,6 +326,7 @@
     $("cine-prev").hidden = $("cine-next").hidden = !many;
     $("cine-list").innerHTML = many ? p.videos.map((v, j) => `<button type="button" data-cv="${j}" aria-label="Video ${j + 1}">${videoThumb(v, p)}<span>${PLAY}</span></button>`).join("") : "";
     if (!cine.open) cine.showModal();
+    gaEvent("ver_video", { currency: "COP", value: p.price || 0, items: [item(p)] });
     cineGo(i || 0);
   }
   function cineGo(i) {
@@ -432,6 +438,7 @@
   });
   function openDetail(p, video) {
     current = p;
+    gaEvent("view_item", { currency: "COP", value: p.price || 0, items: [item(p)] });
     showMedia(p, video && p.video);
     $("vm-brand").innerHTML = esc(p.brand) + (p.movement ? ` · <span class="mov">${esc(p.movement)}</span>` : "");
     $("vm-title").textContent = p.model;
@@ -657,6 +664,7 @@
     if (!it) cart.push(it = { k, q: 1, p });
     else if (it.q < MAX) it.q++;
     else msg = "Máximo " + MAX;
+    if (msg === "Agregado ✓") gaEvent("add_to_cart", { currency: "COP", value: p.price || 0, items: [item(p)] });
     saveCart();
     renderCart();
     if (btn) {
@@ -929,5 +937,18 @@
     render();
     if (PARA_TI && !SELLER) document.getElementById("catalogo").scrollIntoView();
   }
+  // Clics en "Pedir por WhatsApp": del carrito, de un reloj o el botón general.
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest && e.target.closest('a[href^="https://wa.me/"]');
+    if (!a) return;
+    if (a.id === "cart-send") {
+      const t = totals();
+      return gaEvent("pedido_whatsapp_carrito", { currency: "COP", value: t.total, codigo: promo ? promo.code || "" : "", items: cart.map((it) => Object.assign(item(it.p), { quantity: it.q })) });
+    }
+    const card = a.closest(".card"), cardImg = card && card.querySelector("[data-i]");
+    const p = a.id === "vm-wa" ? current : a.id === "cine-wa" ? cineP : cardImg ? SHOWN[+cardImg.dataset.i] : null;
+    if (p) gaEvent("pedido_whatsapp_reloj", { currency: "COP", value: p.price || 0, agotado: !!p.soldOut, items: [item(p)] });
+    else gaEvent("contacto_whatsapp", { boton: a.id || "otro" });
+  });
   load();
 })();

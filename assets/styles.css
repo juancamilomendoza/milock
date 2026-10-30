@@ -341,7 +341,8 @@ html:has(dialog.cine[open]){overflow:hidden}
 .cine-stage.is-vertical{height:min(100%,74dvh);aspect-ratio:9/16;max-width:calc(100vw - 32px)}
 /* Reproductor de vista previa de Drive: necesita un marco ancho; él mismo centra el video con franjas a ambos lados. */
 .cine-stage.is-drive{width:min(640px,calc(100vw - 140px));height:72dvh}
-.cine-stage.is-social{height:min(100%,86dvh);aspect-ratio:9/19;background:#fff}
+.cine-stage.is-social{width:min(380px,calc(100vw - 32px));height:min(86dvh,780px);aspect-ratio:auto;background:#fff}
+.cine-stage.is-social iframe{overflow:hidden}
 .cine-stage.is-wide{width:min(1000px,calc(100vw - 140px));aspect-ratio:16/9;max-height:100%}
 .cine-stage.is-file{max-height:100%;max-width:calc(100vw - 140px);display:grid}
 .cine-stage.is-file video{width:auto;height:auto;max-width:100%;max-height:min(74dvh,100%)}
@@ -371,6 +372,7 @@ html:has(dialog.cine[open]){overflow:hidden}
   .cine-stage.is-wide{width:100%}
   .cine-stage.is-file{max-width:100%}
   .cine-stage.is-drive{width:100%;height:62dvh}
+  .cine-stage.is-social{height:68dvh}
   .cine-stage.is-file video{max-height:64dvh}
   .cine-info{gap:8px 14px;text-align:center}
   .cine-title{font-size:17px}

@@ -294,8 +294,8 @@
   function videoHTML(v) {
     const info = videoInfo(v);
     if (info.file) return `<video src="${esc(info.file)}" controls autoplay playsinline></video>`;
-    // Instagram y TikTok ponen encabezado y pie alrededor del video: se deja desplazar para que el reproductor nunca quede cortado.
-    return `<iframe src="${esc(info.embed)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write" allowfullscreen title="Video"${info.social ? "" : ' scrolling="no"'}></iframe>`;
+    // Sin barras de desplazamiento: el marco de Instagram/TikTok es lo bastante alto para el video y sus botones.
+    return `<iframe src="${esc(info.embed)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write" allowfullscreen title="Video" scrolling="no"></iframe>`;
   }
   // Miniatura del video: imagen del servicio, primer cuadro del archivo o la foto del reloj.
   function videoThumb(v, p) {

@@ -411,6 +411,8 @@ html:has(dialog.cine[open]){overflow:hidden}
 .sv-badge{display:block;text-align:center;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:6px}
 .sv-badge.yes{background:#16a34a;color:#fff}
 .sv-badge.no{background:var(--chip);color:var(--muted)}
+.sv-price{display:block;margin-top:4px;font-size:12px;font-weight:600;color:#16a34a;letter-spacing:.02em}
+.sv-price b{font-size:14px}
 
 /* Etiqueta "Última unidad" */
 .tag.last{background:linear-gradient(135deg,#F5C451,#E4B54D 45%,#C9982F);color:#1F2F3A;box-shadow:0 0 0 0 rgba(228,181,77,.7);animation:lastpulse 1.8s ease-out infinite}

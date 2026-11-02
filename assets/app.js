@@ -95,7 +95,7 @@
   }
 
   const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z]/g, "");
-  const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", entrega: "days", tiempodeentrega: "days", genero: "gender", para: "gender", mecanismo: "movement", material: "material", correa: "material", materialdelpulso: "material", pulso: "material", materialdelacaja: "caseMaterial", caja: "caseMaterial", color: "color", descripcion: "desc", movimiento: "movement", tipo: "movement", video: "video", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag", estado: "condition", condicion: "conditionNote", top: "top", entregainmediata: "immediate", inmediata: "immediate", inmediato: "immediate", destacado: "featured", destacados: "featured", destacar: "featured", descuento: "discount", dcto: "discount", oferta: "discount" };
+  const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", entrega: "days", tiempodeentrega: "days", genero: "gender", para: "gender", mecanismo: "movement", material: "material", correa: "material", materialdelpulso: "material", pulso: "material", materialdelacaja: "caseMaterial", caja: "caseMaterial", color: "color", descripcion: "desc", movimiento: "movement", tipo: "movement", video: "video", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag", estado: "condition", condicion: "conditionNote", top: "top", entregainmediata: "immediate", inmediata: "immediate", inmediato: "immediate", destacado: "featured", destacados: "featured", destacar: "featured", descuento: "discount", dcto: "discount", oferta: "discount", preciovendedores: "sellerPrice", preciovendedor: "sellerPrice", preciodevendedor: "sellerPrice", preciodevendedores: "sellerPrice", preciominimo: "sellerPrice" };
 
   // Convierte enlaces de Google Drive a una imagen directa.
   function photoUrl(u) {
@@ -161,6 +161,8 @@
       // Si dos columnas apuntan al mismo dato (por ejemplo "Video" y "Link del video"), se juntan en vez de pisarse.
       keys.forEach((k, i) => { const v = (r[i] || "").trim(); if (k && v) p[k] = p[k] ? p[k] + "\n" + v : v; });
       p.price = parseInt((p.price || "").replace(/[^\d]/g, ""), 10) || 0;
+      // Precio mínimo para vendedores: solo se muestra en la vista ?vendedores.
+      p.sellerPrice = parseInt((p.sellerPrice || "").replace(/[^\d]/g, ""), 10) || 0;
       // Descuento en %: acepta "20", "20%" o "0,2". El precio mostrado ya va rebajado.
       let d = parseFloat((p.discount || "").replace(",", ".").replace(/[^\d.]/g, "")) || 0;
       if (d > 0 && d < 1 && !/%/.test(p.discount)) d *= 100;
@@ -436,13 +438,14 @@
     if (e.key === "ArrowLeft") showSlide(slide - 1);
     if (e.key === "ArrowRight") showSlide(slide + 1);
   });
+  const svPrice = (p) => SELLER && p.sellerPrice ? `<span class="sv-price">Precio vendedores <b>${fmt(p.sellerPrice)}</b></span>` : "";
   function openDetail(p, video) {
     current = p;
     gaEvent("view_item", { currency: "COP", value: p.price || 0, items: [item(p)] });
     showMedia(p, video && p.video);
     $("vm-brand").innerHTML = esc(p.brand) + (p.movement ? ` · <span class="mov">${esc(p.movement)}</span>` : "");
     $("vm-title").textContent = p.model;
-    $("vm-price").innerHTML = priceHTML(p);
+    $("vm-price").innerHTML = priceHTML(p) + svPrice(p);
     $("vm-eta").innerHTML = eta(p.days);
     const specs = [["Referencia", p.ref], ["Color", p.color], ["Para", p.gender],
       ["Estado", p.conditionRaw || p.condition === "usado" ? (p.condition === "usado" ? "Usado" : "Nuevo") : ""],
@@ -511,7 +514,7 @@
         <h3 data-i="${i}">${esc(p.model)}</h3>
         ${p.ref || p.color ? `<div class="ref">${[p.color, p.ref && "Ref. " + p.ref].filter(Boolean).map(esc).join(" · ")}</div>` : ""}
         <div class="row">
-          <span class="price">${priceHTML(p)}</span>
+          <span class="price">${priceHTML(p)}${svPrice(p)}</span>
           ${eta(p.days)}
         </div>
         <button class="more" type="button" data-i="${i}">Ver detalles</button>

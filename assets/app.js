@@ -475,7 +475,8 @@
 
   // Compartir: cada reloj tiene su propio enlace (?reloj=marca-modelo-ref-color) que abre la página con ese reloj.
   const slug = (p) => [p.brand, p.model, p.ref, p.color].filter(Boolean).join(" ").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  const shareURL = (p) => location.origin + location.pathname + "?reloj=" + slug(p);
+  // r/<enlace>/ es una página fija con la foto del reloj para la vista previa de WhatsApp (la crea scripts/vistas_previas.py).
+  const shareURL = (p) => location.origin + location.pathname.replace(/[^/]*$/, "") + "r/" + slug(p) + "/";
   $("vm-share").addEventListener("click", async () => {
     const p = current; if (!p) return;
     const url = shareURL(p), title = `${p.brand} ${p.model}`, text = `Mira este reloj en MILOCK: ${title}`;

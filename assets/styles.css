@@ -466,3 +466,84 @@ html:has(dialog.cine[open]){overflow:hidden}
 .para-ti b{display:block;font-family:var(--f-display);font-size:20px;color:var(--gold)}
 .para-ti span{display:block;font-size:14px;color:#C9D4DB;margin-top:2px}
 .para-ti button{border:0;background:none;color:#fff;font:inherit;font-size:14px;font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+
+/* ===== Tema "elegante" (config.js -> tema: "elegante") =====
+   Diseño plano y aspiracional: marfil y azul petróleo, dorado solo como acento fino,
+   títulos en serif, sin sombras ni degradados, esquinas casi rectas y mucho aire. */
+html:root.tema-elegante{
+  --navy:#1F3742; --gold:#C9A45C; --gold-deep:#A8843E; --on-gold:#14242C;
+  --bg:#F7F4EE; --surface:#FFFFFF; --fg:#14242C; --muted:#6B7479; --line:#E5DFD3;
+  --dial-bg:#F1EDE5; --chip:#EFEAE1;
+  --f-display:"Cormorant Garamond","Times New Roman",serif;
+  --r:4px;
+}
+@media (prefers-color-scheme:dark){html:root.tema-elegante:not([data-theme="light"]){
+  --bg:#0F1B21; --surface:#15242B; --fg:#F2EEE6; --muted:#A3ACB0; --line:#26373F;
+  --dial-bg:#1A2B33; --chip:#1D2E36; --gold:#D4B06A; --gold-deep:#D4B06A}}
+html:root.tema-elegante[data-theme="dark"]{
+  --bg:#0F1B21; --surface:#15242B; --fg:#F2EEE6; --muted:#A3ACB0; --line:#26373F;
+  --dial-bg:#1A2B33; --chip:#1D2E36; --gold:#D4B06A; --gold-deep:#D4B06A}
+
+/* Tipografía: títulos en serif fina, etiquetas en mayúsculas espaciadas */
+.tema-elegante h1,.tema-elegante h2,.tema-elegante h3,.tema-elegante .cine-title,.tema-elegante .para-ti b{font-family:var(--f-display);font-weight:600;letter-spacing:0}
+.tema-elegante .hero h1{font-size:clamp(40px,6vw,68px);font-weight:500;line-height:1.05}
+.tema-elegante .hero h1 em{font-style:italic}
+.tema-elegante .sec-head h2{font-size:clamp(30px,3.6vw,42px);font-weight:500}
+.tema-elegante .card h3{font-size:20px;font-weight:600;line-height:1.2}
+.tema-elegante .vm-info h3{font-size:30px;font-weight:500}
+.tema-elegante .feat-txt h2{font-size:clamp(32px,4vw,50px);font-weight:500}
+.tema-elegante .step h3{font-size:22px}
+.tema-elegante .cart-head h3{font-size:26px;font-weight:500}
+.tema-elegante .eyebrow,.tema-elegante .card .brandname,.tema-elegante .feat-brand,.tema-elegante .cine-brand{letter-spacing:.22em;font-weight:600}
+.tema-elegante .price{font-weight:600;letter-spacing:.01em}
+.tema-elegante .stat b{font-family:var(--f-display);font-weight:500}
+
+/* Plano: sin sombras, sin degradados, sin saltos */
+.tema-elegante .card,.tema-elegante .feat-box,.tema-elegante .filter-panel,.tema-elegante .vm-box,.tema-elegante .para-ti,.tema-elegante .sv-bar,.tema-elegante .sv-gate form,.tema-elegante .orig,.tema-elegante .promo-on{border-radius:var(--r)}
+.tema-elegante .card{transition:border-color .2s ease}
+.tema-elegante .card:hover{transform:none;box-shadow:none;border-color:var(--gold)}
+.tema-elegante .feat-box,.tema-elegante .para-ti{background:var(--navy)}
+.tema-elegante .feat-img img{filter:none}
+.tema-elegante .promo-bar{background:var(--navy);color:#F2EEE6;letter-spacing:.04em}
+.tema-elegante .promo-bar b{color:var(--gold)}
+.tema-elegante .pb-copy{background:transparent;box-shadow:inset 0 0 0 1px var(--gold);color:var(--gold);border-radius:var(--r)}
+.tema-elegante .promo-bar:hover .pb-copy{background:var(--gold);color:var(--on-gold)}
+.tema-elegante .play,.tema-elegante .vm-nav,.tema-elegante .wa-float{box-shadow:none}
+.tema-elegante .cine-stage{box-shadow:0 0 0 1px rgba(255,255,255,.08)}
+.tema-elegante .tag.last{background:var(--gold);box-shadow:none;animation:none}
+
+/* Botones y controles: rectos, finos, en mayúsculas */
+.tema-elegante .btn{border-radius:var(--r);font-weight:600;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;padding:13px 22px}
+.tema-elegante .btn-gold{background:var(--navy);color:#F2EEE6}
+.tema-elegante .btn-gold:hover{background:var(--gold);color:var(--on-gold)}
+.tema-elegante .hero .btn-gold,.tema-elegante .feat .btn-gold,.tema-elegante .cine .btn-gold,.tema-elegante .para-ti .btn-gold{background:var(--gold);color:var(--on-gold)}
+.tema-elegante .hero .btn-gold:hover,.tema-elegante .feat .btn-gold:hover,.tema-elegante .cine .btn-gold:hover{background:#F2EEE6}
+.tema-elegante .btn-line{box-shadow:inset 0 0 0 1px var(--fg)}
+.tema-elegante .btn-line:hover{background:var(--fg);color:var(--bg)}
+.tema-elegante .card.agotado .btn{background:var(--chip);color:var(--muted)}
+.tema-elegante .chip,.tema-elegante .filter-btn,.tema-elegante .sort select,.tema-elegante .search input,.tema-elegante .pg-nums button,.tema-elegante .pg-size select,.tema-elegante .promo input,.tema-elegante .sv-gate input,.tema-elegante .qty{border-radius:var(--r)}
+.tema-elegante .seg{border-radius:calc(var(--r) + 2px)}
+.tema-elegante .chip[aria-pressed="true"],.tema-elegante .seg .chip[aria-pressed="true"],.tema-elegante .pg-nums button[aria-current="page"]{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.tema-elegante .tag,.tema-elegante .off,.tema-elegante .used,.tema-elegante .pcount{border-radius:2px;letter-spacing:.12em}
+.tema-elegante .off{background:var(--navy);color:var(--gold)}
+.tema-elegante .feat .off{background:var(--gold);color:var(--on-gold)}
+.tema-elegante .play{border-radius:var(--r)}
+.tema-elegante .vm-thumbs button,.tema-elegante .ci-img,.tema-elegante .cine-list button{border-radius:2px}
+.tema-elegante .step .n{border-radius:0;background:transparent;color:var(--gold-deep);box-shadow:inset 0 0 0 1px var(--gold);font-family:var(--f-display);font-size:18px}
+.tema-elegante .stat{border-top-width:1px}
+
+/* Más aire */
+.tema-elegante section{padding-block:84px}
+.tema-elegante .hero .wrap{padding-block:88px 96px}
+.tema-elegante .grid{gap:28px}
+.tema-elegante .card .body{padding:20px 20px 22px}
+.tema-elegante .hero .sand{border-color:rgba(201,164,92,.22)}
+.tema-elegante .hero .sand::after{border-style:solid;border-color:rgba(201,164,92,.12)}
+@media (max-width:720px){
+  .tema-elegante section{padding-block:56px}
+  .tema-elegante .hero .wrap{padding-block:56px 64px}
+  .tema-elegante .grid{gap:14px}
+  .tema-elegante .card .body{padding:14px}
+  .tema-elegante .card h3{font-size:17px}
+  .tema-elegante .btn{letter-spacing:.08em;font-size:11.5px;padding:12px 10px}
+}

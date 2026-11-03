@@ -26,6 +26,6 @@ window.MILOCK_CONFIG = {
     "top",
   ],
 
-  // Tema de temporada. "halloween" activa la decoración de Halloween; déjenlo en "" para volver al diseño normal.
-  tema: "halloween",
+  // Tema de la página: "elegante" (actual), "" (diseño anterior) o "halloween". Para probar uno sin cambiarlo, agreguen ?tema=elegante o ?tema=clasico a la dirección.
+  tema: "elegante",
 };

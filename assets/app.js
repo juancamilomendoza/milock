@@ -471,6 +471,29 @@
     modal.showModal();
   }
   function closeDetail() { media.innerHTML = ""; if (modal.open) modal.close(); }
+  modal.addEventListener("close", () => { if (/[?&]reloj=/.test(location.search)) history.replaceState(null, "", location.pathname + location.search.replace(/[?&]reloj=[^&]*/, "").replace(/^&/, "?")); });
+
+  // Compartir: cada reloj tiene su propio enlace (?reloj=marca-modelo-ref-color) que abre la página con ese reloj.
+  const slug = (p) => [p.brand, p.model, p.ref, p.color].filter(Boolean).join(" ").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const shareURL = (p) => location.origin + location.pathname + "?reloj=" + slug(p);
+  $("vm-share").addEventListener("click", async () => {
+    const p = current; if (!p) return;
+    const url = shareURL(p), title = `${p.brand} ${p.model}`, text = `Mira este reloj en MILOCK: ${title}`;
+    gaEvent("share", { method: navigator.share ? "menu" : "copiar", item_id: slug(p), items: [item(p)] });
+    if (navigator.share) { try { await navigator.share({ title, text, url }); } catch (e) {} return; }
+    const lbl = $("vm-share-t");
+    try { await navigator.clipboard.writeText(url); lbl.textContent = "¡Enlace copiado!"; }
+    catch (e) { prompt("Copia este enlace:", url); }
+    setTimeout(() => { lbl.textContent = "Compartir"; }, 2200);
+  });
+  function openShared() {
+    const m = location.search.match(/[?&]reloj=([^&]+)/); if (!m) return;
+    const want = decodeURIComponent(m[1]).toLowerCase();
+    const p = PRODUCTS.find((x) => slug(x) === want) || PRODUCTS.find((x) => want.startsWith(slug({ brand: x.brand, model: x.model, ref: x.ref })));
+    if (!p) return;
+    gaEvent("abrir_enlace_reloj", { item_id: want, items: [item(p)] });
+    openDetail(p);
+  }
   $("vm-close").addEventListener("click", closeDetail);
   media.addEventListener("click", (e) => { const b = e.target.closest("[data-cine]"); if (b && current) openCine(current, +b.dataset.cine); });
   modal.addEventListener("click", (e) => { if (e.target === modal) closeDetail(); });
@@ -948,6 +971,7 @@
     renderMaterial();
     render();
     if (PARA_TI && !SELLER) document.getElementById("catalogo").scrollIntoView();
+    openShared();
   }
   // Clics en "Pedir por WhatsApp": del carrito, de un reloj o el botón general.
   document.addEventListener("click", (e) => {

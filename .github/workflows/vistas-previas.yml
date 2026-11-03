@@ -1,8 +1,8 @@
-# Cada 30 minutos lee la hoja y actualiza las vistas previas de los enlaces compartidos (carpeta r/).
+# Una vez al día lee la hoja y actualiza las vistas previas de los enlaces compartidos (carpeta r/).
 name: Vistas previas de relojes
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "0 11 * * *"  # 6:00 a. m. hora de Colombia
   workflow_dispatch:
   push:
     branches: [main]

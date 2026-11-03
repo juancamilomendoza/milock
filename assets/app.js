@@ -509,7 +509,7 @@
   });
 
   const waText = (p) => p.soldOut ? "Avísame cuando llegue" : p.presale ? "Reservar por WhatsApp" : "Pedir por WhatsApp";
-  const presaleNote = `<span class="pre-note">Sé de los primeros en tenerlo. Apártalo hoy y asegura el tuyo.</span>`;
+  const presaleNote = `<span class="pre-note">Reserva exclusiva: asegura el tuyo hoy, antes de que llegue a la vitrina.</span>`;
   const orderMsg = (p) => p.presale ? `${HOLA} quiero reservar el ${p.brand} ${p.model}${p.ref ? " (Ref. " + p.ref + ")" : ""}${p.color ? " color " + p.color.toLowerCase() : ""}${p.price ? " de " + fmt(p.price) : ""}${p.discount ? " (con el " + p.discount + "% de descuento)" : ""} que está en preventa. ¿Cómo hago la reserva?` : `${HOLA} me interesa el ${p.brand} ${p.model}${p.condition === "usado" ? " usado" : ""}${p.ref ? " (Ref. " + p.ref + ")" : ""}${p.price ? " de " + fmt(p.price) : ""}${p.discount ? " (con el " + p.discount + "% de descuento)" : ""}. ¿Me das más información?`;
   function eta(d) {
     if (!d) return "";

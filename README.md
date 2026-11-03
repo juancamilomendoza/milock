@@ -35,6 +35,7 @@ La página lee los productos de una Google Sheet publicada como CSV. Columnas (l
 | Condición | Excelente estado, con caja | Opcional, para relojes usados: detalle que se muestra debajo de "Original · usado" |
 | Entrega inmediata | Sí | Opcional, solo para la vista de vendedores (`?vendedores`). No se muestra a los clientes |
 | Precio vendedores | 290000 | Opcional, precio mínimo al que el vendedor puede dejar el reloj. Solo se ve en la vista de vendedores, nunca en la vista de clientes ni en WhatsApp. Ojo: la hoja es pública, así que quien tenga su enlace podría verla |
+| Preventa | Sí | Opcional. El reloj se puede reservar: etiqueta "Preventa", botón "Reservar por WhatsApp" y filtro Preventa. Se ofrece aunque Disponible diga no |
 | Descuento | 20% | Opcional. Porcentaje de descuento: la página muestra el precio ya rebajado y el original tachado |
 | Descripción | Texto libre | Se muestra en la ficha de detalle |
 

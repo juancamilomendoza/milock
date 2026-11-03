@@ -95,7 +95,7 @@
   }
 
   const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z]/g, "");
-  const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", entrega: "days", tiempodeentrega: "days", genero: "gender", para: "gender", mecanismo: "movement", material: "material", correa: "material", materialdelpulso: "material", pulso: "material", materialdelacaja: "caseMaterial", caja: "caseMaterial", color: "color", descripcion: "desc", movimiento: "movement", tipo: "movement", video: "video", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag", estado: "condition", condicion: "conditionNote", top: "top", entregainmediata: "immediate", inmediata: "immediate", inmediato: "immediate", destacado: "featured", destacados: "featured", destacar: "featured", descuento: "discount", dcto: "discount", oferta: "discount", preciovendedores: "sellerPrice", preciovendedor: "sellerPrice", preciodevendedor: "sellerPrice", preciodevendedores: "sellerPrice", preciominimo: "sellerPrice" };
+  const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", entrega: "days", tiempodeentrega: "days", genero: "gender", para: "gender", mecanismo: "movement", material: "material", correa: "material", materialdelpulso: "material", pulso: "material", materialdelacaja: "caseMaterial", caja: "caseMaterial", color: "color", descripcion: "desc", movimiento: "movement", tipo: "movement", video: "video", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag", estado: "condition", condicion: "conditionNote", top: "top", entregainmediata: "immediate", inmediata: "immediate", inmediato: "immediate", destacado: "featured", destacados: "featured", destacar: "featured", descuento: "discount", dcto: "discount", oferta: "discount", preciovendedores: "sellerPrice", preciovendedor: "sellerPrice", preciodevendedor: "sellerPrice", preciodevendedores: "sellerPrice", preciominimo: "sellerPrice", preventa: "presale", reserva: "presale", reservar: "presale", proximamente: "presale" };
 
   // Convierte enlaces de Google Drive a una imagen directa.
   function photoUrl(u) {
@@ -197,6 +197,10 @@
       p.top = !!tp && tp !== "no";
       const ft = norm(p.featured || "");
       p.featured = !!ft && ft !== "no";
+      // Preventa: relojes que se pueden reservar antes de tenerlos. Se ofrecen aunque "Disponible" diga no.
+      const pv = norm(p.presale || "");
+      p.presale = !!pv && pv !== "no";
+      if (p.presale) p.soldOut = false;
       return p;
     }).map((p) => { if (!p.model) p.model = p.ref || ""; return p; })
       .filter((p) => p.brand && p.model).map((p, _, all) => {
@@ -242,7 +246,9 @@
     estadoEl.querySelectorAll("[data-e]").forEach((c) => c.setAttribute("aria-pressed", c.dataset.e === estado));
     render();
   });
-  let onlyTop = false;
+  let onlyTop = false, onlyPre = false;
+  const preChip = document.getElementById("pre-chip");
+  preChip.addEventListener("click", () => { onlyPre = !onlyPre; preChip.setAttribute("aria-pressed", onlyPre); render(); });
   const topChip = document.getElementById("top-chip");
   topChip.addEventListener("click", () => { onlyTop = !onlyTop; topChip.setAttribute("aria-pressed", onlyTop); render(); });
   const genderEl = document.getElementById("gender");
@@ -323,7 +329,7 @@
     $("cine-price").innerHTML = p.soldOut ? "Agotado" : priceHTML(p);
     $("cine-add").hidden = p.soldOut;
     $("cine-wa").href = wa(p.soldOut ? `Hola MILOCK, vi que el ${p.brand} ${p.model} está agotado. ¿Me avisan cuando vuelva?` : orderMsg(p));
-    $("cine-wa").textContent = p.soldOut ? "Avísame cuando llegue" : "Pedir por WhatsApp";
+    $("cine-wa").textContent = waText(p);
     const many = p.videos.length > 1;
     $("cine-prev").hidden = $("cine-next").hidden = !many;
     $("cine-list").innerHTML = many ? p.videos.map((v, j) => `<button type="button" data-cv="${j}" aria-label="Video ${j + 1}">${videoThumb(v, p)}<span>${PLAY}</span></button>`).join("") : "";
@@ -446,7 +452,7 @@
     $("vm-brand").innerHTML = esc(p.brand) + (p.movement ? ` · <span class="mov">${esc(p.movement)}</span>` : "");
     $("vm-title").textContent = p.model;
     $("vm-price").innerHTML = priceHTML(p) + svPrice(p);
-    $("vm-eta").innerHTML = eta(p.days);
+    $("vm-eta").innerHTML = eta(p.days) + (p.presale ? presaleNote : "");
     const specs = [["Referencia", p.ref], ["Color", p.color], ["Para", p.gender],
       ["Estado", p.conditionRaw || p.condition === "usado" ? (p.condition === "usado" ? "Usado" : "Nuevo") : ""],
       ["Mecanismo", p.movement], ["Material de la caja", p.caseMaterial], ["Material del pulso", p.material]].filter((s) => s[1]);
@@ -460,7 +466,7 @@
     $("vm-desc").textContent = p.desc || "";
     const w = $("vm-wa");
     w.href = wa(p.soldOut ? `Hola MILOCK, vi que el ${p.brand} ${p.model} está agotado. ¿Me avisan cuando vuelva?` : orderMsg(p));
-    w.textContent = p.soldOut ? "Avísame cuando llegue" : "Pedir por WhatsApp";
+    w.textContent = waText(p);
     $("vm-add").hidden = p.soldOut;
     modal.showModal();
   }
@@ -479,7 +485,9 @@
     openDetail(p, b.classList.contains("play"));
   });
 
-  const orderMsg = (p) => `${HOLA} me interesa el ${p.brand} ${p.model}${p.condition === "usado" ? " usado" : ""}${p.ref ? " (Ref. " + p.ref + ")" : ""}${p.price ? " de " + fmt(p.price) : ""}${p.discount ? " (con el " + p.discount + "% de descuento)" : ""}. ¿Me das más información?`;
+  const waText = (p) => p.soldOut ? "Avísame cuando llegue" : p.presale ? "Reservar por WhatsApp" : "Pedir por WhatsApp";
+  const presaleNote = `<span class="pre-note">Preventa: resérvalo antes que nadie y te confirmamos todo por WhatsApp.</span>`;
+  const orderMsg = (p) => p.presale ? `${HOLA} quiero reservar el ${p.brand} ${p.model}${p.ref ? " (Ref. " + p.ref + ")" : ""}${p.color ? " color " + p.color.toLowerCase() : ""}${p.price ? " de " + fmt(p.price) : ""}${p.discount ? " (con el " + p.discount + "% de descuento)" : ""} que está en preventa. ¿Cómo hago la reserva?` : `${HOLA} me interesa el ${p.brand} ${p.model}${p.condition === "usado" ? " usado" : ""}${p.ref ? " (Ref. " + p.ref + ")" : ""}${p.price ? " de " + fmt(p.price) : ""}${p.discount ? " (con el " + p.discount + "% de descuento)" : ""}. ¿Me das más información?`;
   function eta(d) {
     if (!d) return "";
     const icon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`;
@@ -502,13 +510,13 @@
   function card(p, i) {
     const img = p.photo ? `<img data-trim src="${esc(p.photo)}" alt="${esc(p.brand + " " + p.model)}" loading="lazy">` : watchSVG(p);
     const count = p.photos && p.photos.length > 1 ? `<span class="pcount">${p.photos.length} fotos</span>` : "";
-    const tag = p.soldOut ? "Agotado" : p.tag;
+    const tag = p.soldOut ? "Agotado" : p.presale ? "Preventa" : p.tag;
     const sv = SELLER ? `<span class="sv-badge ${p.immediate ? "yes" : "no"}">${p.immediate ? "Entrega inmediata" : "Sin stock inmediato"}</span>` : "";
     const msg = orderMsg(p);
     const play = p.videos.length ? `<button class="play" type="button" data-v="${i}" aria-label="Ver video del ${esc(p.brand + " " + p.model)}">${PLAY}${p.videos.length > 1 ? p.videos.length + " videos" : "Ver video"}</button>` : "";
     const file = p.videos.map(videoInfo).find((x) => x.file);
     return `<article class="card${p.soldOut ? " agotado" : ""}">
-      ${sv}<div class="img" data-i="${i}"${file ? ` data-prev="${esc(file.file)}"` : ""}>${tag ? `<span class="tag${isLast(tag) ? " last" : ""}">${esc(tag)}</span>` : ""}${p.condition === "usado" ? `<span class="used">Usado</span>` : ""}${p.discount && !p.soldOut ? `<span class="off">-${p.discount}%</span>` : ""}${img}${count}${play}</div>
+      ${sv}<div class="img" data-i="${i}"${file ? ` data-prev="${esc(file.file)}"` : ""}>${tag ? `<span class="tag${isLast(tag) ? " last" : ""}${p.presale ? " pre" : ""}">${esc(tag)}</span>` : ""}${p.condition === "usado" ? `<span class="used">Usado</span>` : ""}${p.discount && !p.soldOut ? `<span class="off">-${p.discount}%</span>` : ""}${img}${count}${play}</div>
       <div class="body">
         <div class="brandname">${esc(p.brand)}${p.movement ? ` · <span class="mov">${esc(p.movement)}</span>` : ""}</div>
         <h3 data-i="${i}">${esc(p.model)}</h3>
@@ -519,7 +527,7 @@
         </div>
         <button class="more" type="button" data-i="${i}">Ver detalles</button>
         ${p.soldOut ? "" : `<button class="btn btn-line add" type="button" data-add="${i}">Agregar al carrito</button>`}
-        <a class="btn btn-gold" target="_blank" rel="noopener" href="${wa(p.soldOut ? `Hola MILOCK, vi que el ${p.brand} ${p.model} está agotado. ¿Me avisan cuando vuelva?` : msg)}">${p.soldOut ? "Avísame cuando llegue" : "Pedir por WhatsApp"}</a>
+        <a class="btn btn-gold" target="_blank" rel="noopener" href="${wa(p.soldOut ? `Hola MILOCK, vi que el ${p.brand} ${p.model} está agotado. ¿Me avisan cuando vuelva?` : msg)}">${waText(p)}</a>
       </div>
     </article>`;
   }
@@ -578,7 +586,7 @@
     if (keepPage !== true) page = 1;
     updateCount();
     const term = q.value.trim().toLowerCase();
-    let list = PRODUCTS.filter((p) => (!onlyTop || p.top) && (estado === "Todos" || p.condition === estado) && matchGender(p) && matchMovement(p) && matchMaterial(p) && (active === "Todas" || p.brand === active) &&
+    let list = PRODUCTS.filter((p) => (!onlyTop || p.top) && (!onlyPre || p.presale) && (estado === "Todos" || p.condition === estado) && matchGender(p) && matchMovement(p) && matchMaterial(p) && (active === "Todas" || p.brand === active) &&
       (!term || [p.brand, p.model, p.ref, p.material, p.caseMaterial, p.color, p.movement].join(" ").toLowerCase().includes(term)));
     const dir = sortEl.value === "asc" ? 1 : sortEl.value === "desc" ? -1 : 0;
     // "Consultar" (sin precio) siempre al final.
@@ -746,7 +754,7 @@
     const lines = cart.map((it) => {
       const p = it.p, ref = [p.ref && "Ref. " + p.ref, p.color && "color " + p.color.toLowerCase()].filter(Boolean).join(", ");
       const val = p.price ? ` = ${fmt(p.price * it.q)}${p.discount ? ` (con ${p.discount}% de descuento)` : ""}` : " = precio por consultar";
-      return `• ${it.q} x ${p.brand} ${p.model}${p.condition === "usado" ? " usado" : ""}${ref ? ` (${ref})` : ""}${val}`;
+      return `• ${it.q} x ${p.brand} ${p.model}${p.condition === "usado" ? " usado" : ""}${ref ? ` (${ref})` : ""}${val}${p.presale ? " [reserva de preventa]" : ""}`;
     });
     const units = cart.reduce((n, it) => n + it.q, 0), t = totals();
     const promoLines = promo && t.off ? `Subtotal: ${fmt(t.sub)}\nCódigo de descuento ${promo.code} (${promo.pct}%): -${fmt(t.off)}\n` : "";
@@ -770,7 +778,7 @@
         <div class="ci-info">
           <div class="brandname">${esc(p.brand)}</div>
           <div class="ci-name">${esc(p.model)}${p.ref ? ` <span>Ref. ${esc(p.ref)}</span>` : ""}</div>
-          ${p.color || p.condition === "usado" ? `<div class="ci-color">${[p.color && "Color: " + esc(p.color), p.condition === "usado" && "Usado"].filter(Boolean).join(" · ")}</div>` : ""}
+          ${p.color || p.condition === "usado" || p.presale ? `<div class="ci-color">${[p.color && "Color: " + esc(p.color), p.condition === "usado" && "Usado", p.presale && "Preventa"].filter(Boolean).join(" · ")}</div>` : ""}
           <div class="ci-row">
             <div class="qty" role="group" aria-label="Cantidad">
               <button type="button" data-q="${j}" data-d="-1" aria-label="Quitar uno"${it.q <= 1 ? " disabled" : ""}>−</button>
@@ -932,6 +940,7 @@
     promoBar();
     renderFeatured();
     topChip.hidden = !PRODUCTS.some((p) => p.top);
+    preChip.hidden = !PRODUCTS.some((p) => p.presale);
     estadoEl.hidden = !(PRODUCTS.some((p) => p.condition === "usado") && PRODUCTS.some((p) => p.condition === "nuevo"));
     if (/[?&]revisar\b/.test(location.search)) showCheck();
     renderChips();
@@ -950,7 +959,7 @@
     }
     const card = a.closest(".card"), cardImg = card && card.querySelector("[data-i]");
     const p = a.id === "vm-wa" ? current : a.id === "cine-wa" ? cineP : cardImg ? SHOWN[+cardImg.dataset.i] : null;
-    if (p) gaEvent("pedido_whatsapp_reloj", { currency: "COP", value: p.price || 0, agotado: !!p.soldOut, items: [item(p)] });
+    if (p) gaEvent(p.presale ? "reserva_preventa" : "pedido_whatsapp_reloj", { currency: "COP", value: p.price || 0, agotado: !!p.soldOut, items: [item(p)] });
     else gaEvent("contacto_whatsapp", { boton: a.id || "otro" });
   });
   load();

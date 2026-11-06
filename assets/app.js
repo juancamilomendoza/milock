@@ -712,7 +712,9 @@
   // El % del código se aplica sobre el total del carrito, que ya tiene los descuentos de cada reloj.
   const PROMO_KEY = "milock-codigo";
   let promo = null, CODES = null, savedCode = "";
-  try { savedCode = (JSON.parse(localStorage.getItem(PROMO_KEY)) || {}).code || ""; } catch (e) {}
+  // Con codigosDescuento: false en config.js no se muestra nada de códigos y se olvida el que estuviera guardado.
+  const CODES_ON = CFG.codigosDescuento !== false;
+  try { if (CODES_ON) savedCode = (JSON.parse(localStorage.getItem(PROMO_KEY)) || {}).code || ""; else localStorage.removeItem(PROMO_KEY); } catch (e) {}
   // Se pide una sola vez (lo usan el carrito y la barra de promoción).
   function loadCodes() { return CODES || (CODES = fetchCodes().catch((e) => { CODES = null; throw e; })); }
   async function fetchCodes() {
@@ -820,7 +822,7 @@
     $("cart-units").textContent = `${units} ${units === 1 ? "reloj" : "relojes"}`;
     const t = totals();
     $("cart-total").textContent = fmt(t.total);
-    $("promo-form").hidden = !!promo;
+    $("promo-form").hidden = !!promo || !CODES_ON;
     $("promo-on").hidden = !promo;
     if (promo) $("promo-label").textContent = `Código ${promo.code} · -${promo.pct}%`;
     $("cart-sub").hidden = $("cart-off").hidden = !(promo && t.off);
@@ -960,8 +962,10 @@
       return;
     }
     syncCart();
-    if (savedCode) applyCode(savedCode, true);
-    promoBar();
+    if (CODES_ON) {
+      if (savedCode) applyCode(savedCode, true);
+      promoBar();
+    }
     renderFeatured();
     topChip.hidden = !PRODUCTS.some((p) => p.top);
     preChip.hidden = !PRODUCTS.some((p) => p.presale);

@@ -9,8 +9,11 @@ Uso: python scripts/vistas_previas.py [archivo.csv]   (sin archivo, lee la Googl
 """
 import csv, hashlib, html, io, json, os, re, shutil, sys, unicodedata, urllib.parse, urllib.request
 
-SITE = os.environ.get("SITE_URL", "https://juancamilomendoza.github.io/milock/").rstrip("/") + "/"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_cfg = open(os.path.join(ROOT, "config.js"), encoding="utf-8").read()
+_m = re.search(r'sitio\s*:\s*"([^"]+)"', _cfg)
+SITE = os.environ.get("SITE_URL") or (_m.group(1) if _m else "https://juancamilomendoza.github.io/milock/")
+SITE = SITE.rstrip("/") + "/"
 OUT = os.path.join(ROOT, "r")
 IMG = os.path.join(OUT, "img")
 MANIFEST = os.path.join(OUT, "fotos.json")

@@ -1,5 +1,9 @@
 // Configuración de la tienda MILOCK. Este es el único archivo que hay que tocar para cambiar datos básicos.
 window.MILOCK_CONFIG = {
+  // Dirección principal de la página. Al cambiarla (por ejemplo al dominio propio en Netlify), quien entre por la
+  // dirección vieja de GitHub Pages pasa sola a esta, y las vistas previas de los enlaces usan esta dirección.
+  sitio: "https://juancamilomendoza.github.io/milock/",
+
   // Número de WhatsApp para pedidos, con código de país y sin "+" ni espacios.
   whatsapp: "573128544398",
 

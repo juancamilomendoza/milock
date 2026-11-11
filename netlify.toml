@@ -1,0 +1,22 @@
+# Netlify: la página es estática, no necesita compilarse; se publica la carpeta tal cual.
+[build]
+  publish = "."
+  command = ""
+
+# Enlace de un reloj cuya vista previa aún no existe: abre la página con ese reloj.
+# (Si la página r/<enlace>/ ya existe, Netlify la sirve y esta regla no se usa.)
+[[redirects]]
+  from = "/r/:slug/"
+  to = "/?reloj=:slug"
+  status = 302
+
+[[redirects]]
+  from = "/r/:slug"
+  to = "/?reloj=:slug"
+  status = 302
+
+# Que los clientes siempre vean la última versión de la página y de la configuración.
+[[headers]]
+  for = "/config.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

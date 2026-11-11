@@ -4,7 +4,9 @@
 <script>
   // Enlace de un reloj cuya vista previa aún no se ha creado (r/<enlace>/): abre la página con ese reloj.
   var m = location.pathname.match(/^(.*?\/)r\/([a-z0-9-]+)\/?$/);
-  location.replace(m ? m[1] + "?reloj=" + m[2] : (location.pathname.match(/^\/[^\/]+\//) || ["/"])[0]);
+  // En GitHub Pages la página vive en /milock/; con dominio propio, en la raíz.
+  var base = /github\.io$/.test(location.hostname) ? (location.pathname.match(/^\/[^\/]+\//) || ["/"])[0] : "/";
+  location.replace(m ? m[1] + "?reloj=" + m[2] : base);
 </script>
 <style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#F7F4EE;color:#14242C;font:16px system-ui,sans-serif}</style>
-</head><body><p><a href="/milock/">Ir a MILOCK</a></p></body></html>
+</head><body><p><a href="/">Ir a MILOCK</a></p></body></html>

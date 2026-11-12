@@ -18,6 +18,7 @@ OUT = os.path.join(ROOT, "r")
 IMG = os.path.join(OUT, "img")
 MANIFEST = os.path.join(OUT, "fotos.json")
 BG = (247, 244, 238)  # marfil del tema
+FORMAT = "800-jpg-v2"  # al cambiar el formato de las fotos, se vuelven a crear todas
 
 
 def strip(s):
@@ -112,8 +113,9 @@ def save_photo(src, dest):
     side = max(im.size) + 120
     canvas = Image.new("RGB", (side, side), BG)
     canvas.paste(im, ((side - im.width) // 2, (side - im.height) // 2), im)
-    canvas.thumbnail((800, 800))
-    canvas.save(dest, "JPEG", quality=82, optimize=True, progressive=True)
+    # Siempre 800x800 y JPG normal (no progresivo): es lo que WhatsApp muestra sin problemas.
+    canvas = canvas.resize((800, 800), Image.LANCZOS)
+    canvas.save(dest, "JPEG", quality=82, optimize=True)
 
 
 PAGE = """<!doctype html>
@@ -122,15 +124,21 @@ PAGE = """<!doctype html>
 <title>{title}</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
-<meta property="og:type" content="product">
+<meta property="og:type" content="website">
 <meta property="og:site_name" content="MILOCK Relojería">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
 <meta property="og:url" content="{url}">
 <meta property="og:image" content="{image}">
+<meta property="og:image:secure_url" content="{image}">
+<meta property="og:image:type" content="{image_type}">
+<meta property="og:image:width" content="{image_size}">
+<meta property="og:image:height" content="{image_size}">
+<meta property="og:image:alt" content="{name}">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="canonical" href="{target}">
-<meta http-equiv="refresh" content="0;url={target}">
+<meta name="twitter:image" content="{image}">
+<!-- Sin redirección en el HTML: WhatsApp la seguiría y mostraría la página general en vez de este reloj.
+     Solo las personas (que sí ejecutan JavaScript) pasan a la página con el reloj abierto. -->
 <script>location.replace({target_js});</script>
 <style>body{{margin:0;min-height:100vh;display:grid;place-items:center;background:#F7F4EE;color:#14242C;font:16px Montserrat,system-ui,sans-serif}}a{{color:inherit}}</style>
 </head><body><p><a href="{target}">Ver {name} en MILOCK</a></p></body></html>
@@ -152,11 +160,11 @@ def main():
         seen.add(s)
         name = " ".join(x for x in (p.get("brand", "").strip(), p.get("model", "").strip()) if x)
         photos = [photo_url(u) for u in re.split(r"[\s,;|]+", p.get("photo", "")) if u]
-        image = SITE + "assets/logos/icono-512.png"
+        image, image_type, image_size = SITE + "assets/logos/icono-512.png", "image/png", "512"
         if photos:
             src = photos[0] if re.match(r"https?://", photos[0]) else SITE + photos[0].lstrip("/")
-            dest = os.path.join(IMG, s + ".jpg")
-            key = hashlib.sha1(src.encode()).hexdigest()
+            key = hashlib.sha1((src + FORMAT).encode()).hexdigest()
+            dest = os.path.join(IMG, s + "-" + key[:8] + ".jpg")
             if manifest.get(s) == key and os.path.exists(dest):
                 new_manifest[s] = key
             else:
@@ -167,14 +175,14 @@ def main():
                 except Exception as e:  # noqa: BLE001
                     print("Sin foto para", s, e)
             if s in new_manifest:
-                image = SITE + "r/img/" + s + ".jpg?v=" + new_manifest[s][:8]
+                image, image_type, image_size = SITE + "r/img/" + s + "-" + key[:8] + ".jpg", "image/jpeg", "800"
         bits = [price_text(p), p.get("ref") and "Ref. " + p["ref"], p.get("color", "").capitalize()]
         presale = norm(p.get("presale", "")) not in ("", "no")
         tail = "Reserva exclusiva por WhatsApp." if presale else "100% original. Atención personalizada por WhatsApp."
         desc = " · ".join(b for b in bits if b) + ". " + tail
         target = SITE + "?reloj=" + s
         page = PAGE.format(title=html.escape(name + " · MILOCK"), desc=html.escape(desc), url=SITE + "r/" + s + "/",
-                           image=html.escape(image), target=html.escape(target), target_js=json.dumps(target),
+                           image=html.escape(image), image_type=image_type, image_size=image_size, target=html.escape(target), target_js=json.dumps(target),
                            name=html.escape(name))
         d = os.path.join(OUT, s)
         os.makedirs(d, exist_ok=True)
@@ -184,8 +192,9 @@ def main():
     for n in os.listdir(OUT):
         if os.path.isdir(os.path.join(OUT, n)) and n != "img" and n not in seen:
             shutil.rmtree(os.path.join(OUT, n))
+    keep = {s + "-" + k[:8] + ".jpg" for s, k in new_manifest.items()}
     for n in os.listdir(IMG):
-        if n[:-4] not in new_manifest:
+        if n not in keep:
             os.remove(os.path.join(IMG, n))
     with open(MANIFEST, "w", encoding="utf-8") as f:
         json.dump(new_manifest, f, indent=0, sort_keys=True)

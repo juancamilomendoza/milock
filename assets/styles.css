@@ -573,3 +573,34 @@ html:root.tema-blackfriday{--navy:#0B0B0C; --gold:#D4AF37; --gold-deep:#A8862A; 
 .off.bf small{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#F2EEE6;font-weight:700}
 .bf-chip svg{color:#D4AF37}
 .bf-chip[aria-pressed="true"] svg{color:inherit}
+
+/* Black Friday más llamativo: barra grande, portada propia, tarjetas con franja dorada */
+.bf-bar{font-size:15px;padding:13px 16px;border-bottom:2px solid #D4AF37}
+.bf-bar b{font-size:19px;letter-spacing:.28em}
+.bf-bar .pb-copy{font-size:12.5px;padding:6px 14px;background:#D4AF37;color:#0B0B0C}
+.bf-bar:hover .pb-copy{background:#F2EEE6}
+.bf-hero{background:#0B0B0C;color:#F2EEE6;text-align:center;padding-block:56px 60px;position:relative;overflow:hidden;border-bottom:1px solid rgba(212,175,55,.35)}
+.bf-hero::before,.bf-hero::after{content:"";position:absolute;left:0;right:0;height:3px;background:repeating-linear-gradient(90deg,#D4AF37 0 24px,transparent 24px 36px)}
+.bf-hero::before{top:16px} .bf-hero::after{bottom:16px}
+.bf-kicker{margin:0;font-size:13px;font-weight:700;letter-spacing:.32em;text-transform:uppercase;color:#D4AF37}
+.bf-title{font-family:var(--f-body)!important;font-weight:900!important;font-size:clamp(54px,11vw,132px)!important;line-height:.9!important;letter-spacing:-.02em!important;text-transform:uppercase;margin:12px 0 10px!important;color:#F2EEE6}
+.bf-title span{color:#D4AF37}
+.bf-deal{margin:0 0 26px;font-size:clamp(18px,2.6vw,26px);color:#F2EEE6}
+.bf-deal b{color:#D4AF37;font-weight:800}
+.bf-hero .btn{font-size:14px;padding:16px 30px}
+.card.is-bf{border-color:#D4AF37;box-shadow:inset 0 0 0 1px #D4AF37}
+.card.is-bf .img::after{content:"Black Friday";position:absolute;left:0;right:0;bottom:0;z-index:2;background:#0B0B0C;color:#D4AF37;font-size:12px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;text-align:center;padding:7px 4px}
+.card.is-bf .pcount,.card.is-bf .play{bottom:42px}
+.card.is-bf .price{color:#A8862A}
+.off.bf{padding:7px 11px;font-size:20px;font-weight:900}
+.off.bf small{font-size:9.5px}
+.bf-chip{background:#0B0B0C!important;color:#D4AF37!important;border-color:#0B0B0C!important;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.bf-chip[aria-pressed="true"]{background:#D4AF37!important;color:#0B0B0C!important;border-color:#D4AF37!important}
+@media (max-width:720px){
+  .bf-bar{font-size:13px;gap:6px 10px} .bf-bar b{font-size:16px}
+  .bf-hero{padding-block:40px 44px}
+  .card.is-bf .img::after{font-size:10px;letter-spacing:.2em;padding:5px 2px}
+  .off.bf{font-size:16px;padding:5px 8px}
+}
+.bf-hero .btn-gold,.tema-elegante .bf-hero .btn-gold{background:#D4AF37;color:#0B0B0C}
+.bf-hero .btn-gold:hover,.tema-elegante .bf-hero .btn-gold:hover{background:#F2EEE6;color:#0B0B0C}

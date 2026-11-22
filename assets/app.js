@@ -550,7 +550,7 @@
     const msg = orderMsg(p);
     const play = p.videos.length ? `<button class="play" type="button" data-v="${i}" aria-label="Ver video del ${esc(p.brand + " " + p.model)}">${PLAY}${p.videos.length > 1 ? p.videos.length + " videos" : "Ver video"}</button>` : "";
     const file = p.videos.map(videoInfo).find((x) => x.file);
-    return `<article class="card${p.soldOut ? " agotado" : ""}">
+    return `<article class="card${p.soldOut ? " agotado" : ""}${p.bf ? " is-bf" : ""}">
       ${sv}<div class="img" data-i="${i}"${file ? ` data-prev="${esc(file.file)}"` : ""}>${tag ? `<span class="tag${isLast(tag) ? " last" : ""}${p.presale ? " pre" : ""}">${esc(tag)}</span>` : ""}${p.condition === "usado" ? `<span class="used">Usado</span>` : ""}${offBadge(p)}${img}${count}${play}</div>
       <div class="body">
         <div class="brandname">${esc(p.brand)}${p.movement ? ` · <span class="mov">${esc(p.movement)}</span>` : ""}</div>
@@ -769,11 +769,18 @@
   // Barra de Black Friday: lleva al catálogo con solo los relojes en oferta.
   function bfBar() {
     if (!PRODUCTS.some((p) => p.bf) || $("bf-bar")) return;
-    document.body.insertAdjacentHTML("afterbegin", `<button type="button" class="bf-bar" id="bf-bar"><b>Black Friday</b><span>${BF}% adicional en relojes seleccionados</span><span class="pb-copy">Ver ofertas</span></button>`);
-    $("bf-bar").addEventListener("click", () => {
+    document.body.insertAdjacentHTML("afterbegin", `<button type="button" class="bf-bar bf-go" id="bf-bar"><b>Black Friday</b><span>${BF}% adicional en relojes seleccionados</span><span class="pb-copy">Ver ofertas</span></button>`);
+    const n = PRODUCTS.filter((p) => p.bf).length;
+    document.getElementById("inicio").insertAdjacentHTML("afterbegin", `<section class="bf-hero" aria-label="Black Friday"><div class="wrap">
+      <p class="bf-kicker">Solo por tiempo limitado</p>
+      <h2 class="bf-title">Black <span>Friday</span></h2>
+      <p class="bf-deal"><b>${BF}% adicional</b> en ${n} ${n === 1 ? "reloj seleccionado" : "relojes seleccionados"}</p>
+      <button type="button" class="btn btn-gold bf-go">Ver ofertas Black Friday</button>
+    </div></section>`);
+    document.querySelectorAll(".bf-go").forEach((b) => b.addEventListener("click", () => {
       if (!onlyBf) bfChip.click();
       document.getElementById("catalogo").scrollIntoView({ behavior: "smooth" });
-    });
+    }));
   }
   async function promoBar() {
     let c;

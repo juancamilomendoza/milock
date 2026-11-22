@@ -557,3 +557,19 @@ html:root.tema-elegante[data-theme="dark"]{
 .vm-share{align-self:flex-start;display:inline-flex;align-items:center;gap:7px;margin:0 0 8px;padding:7px 12px;border:1px solid var(--line);border-radius:var(--r,999px);background:transparent;color:var(--fg);font:inherit;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
 .vm-share:hover{border-color:var(--gold);color:var(--gold-deep)}
 .vm-share svg{width:15px;height:15px}
+
+/* ===== Black Friday (config.js -> tema: "blackfriday", blackFriday: 10) =====
+   Se monta sobre el tema elegante: negro profundo y dorado en las zonas grandes, catálogo claro para leer bien. */
+html:root.tema-blackfriday{--navy:#0B0B0C; --gold:#D4AF37; --gold-deep:#A8862A; --on-gold:#0B0B0C}
+.tema-blackfriday .hero{background:#0B0B0C}
+.tema-blackfriday .hero .eyebrow::after{content:" · Black Friday";color:#fff}
+.tema-blackfriday footer{background:#0B0B0C}
+.tema-blackfriday .feat-box,.tema-blackfriday .para-ti{background:#0B0B0C;box-shadow:inset 0 0 0 1px rgba(212,175,55,.45)}
+.bf-bar{display:flex;width:100%;justify-content:center;align-items:center;gap:10px 14px;flex-wrap:wrap;border:0;cursor:pointer;font:inherit;font-size:13.5px;padding:10px 16px;background:#0B0B0C;color:#F2EEE6;text-align:center;letter-spacing:.04em}
+.bf-bar b{color:#D4AF37;font-weight:800;letter-spacing:.22em;text-transform:uppercase}
+.bf-bar .pb-copy{font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:4px 12px;border-radius:var(--r,999px);background:transparent;box-shadow:inset 0 0 0 1px #D4AF37;color:#D4AF37}
+.bf-bar:hover .pb-copy{background:#D4AF37;color:#0B0B0C}
+.off.bf{display:flex;flex-direction:column;align-items:center;line-height:1.1;background:#0B0B0C;color:#D4AF37;padding:5px 9px}
+.off.bf small{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#F2EEE6;font-weight:700}
+.bf-chip svg{color:#D4AF37}
+.bf-chip[aria-pressed="true"] svg{color:inherit}

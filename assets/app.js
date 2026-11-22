@@ -95,6 +95,7 @@
   }
 
   const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z]/g, "");
+  const BF = Math.max(0, Math.min(90, +CFG.blackFriday || 0));
   const COLS = { marca: "brand", modelo: "model", referencia: "ref", ref: "ref", precio: "price", diasdeentrega: "days", dias: "days", entrega: "days", tiempodeentrega: "days", genero: "gender", para: "gender", mecanismo: "movement", material: "material", correa: "material", materialdelpulso: "material", pulso: "material", materialdelacaja: "caseMaterial", caja: "caseMaterial", color: "color", descripcion: "desc", movimiento: "movement", tipo: "movement", video: "video", foto: "photo", imagen: "photo", disponible: "available", etiqueta: "tag", estado: "condition", condicion: "conditionNote", top: "top", entregainmediata: "immediate", inmediata: "immediate", inmediato: "immediate", destacado: "featured", destacados: "featured", destacar: "featured", descuento: "discount", dcto: "discount", oferta: "discount", preciovendedores: "sellerPrice", preciovendedor: "sellerPrice", preciodevendedor: "sellerPrice", preciodevendedores: "sellerPrice", preciominimo: "sellerPrice", preventa: "presale", reserva: "presale", reservar: "presale", proximamente: "presale" };
 
   // Convierte enlaces de Google Drive a una imagen directa.
@@ -201,6 +202,13 @@
       const pv = norm(p.presale || "");
       p.presale = !!pv && pv !== "no";
       if (p.presale) p.soldOut = false;
+      // Black Friday (config.js -> blackFriday): % adicional sobre el precio ya rebajado, solo en los relojes de
+      // entrega inmediata. En la página se muestra como "Black Friday", nunca como entrega inmediata.
+      if (BF && p.immediate && !p.soldOut && p.price) {
+        p.bf = true;
+        p.price = Math.round(p.price * (1 - BF / 100));
+        p.discount = Math.round(100 * (1 - p.price / p.listPrice));
+      }
       return p;
     }).map((p) => { if (!p.model) p.model = p.ref || ""; return p; })
       .filter((p) => p.brand && p.model).map((p, _, all) => {
@@ -246,7 +254,9 @@
     estadoEl.querySelectorAll("[data-e]").forEach((c) => c.setAttribute("aria-pressed", c.dataset.e === estado));
     render();
   });
-  let onlyTop = false, onlyPre = false;
+  let onlyTop = false, onlyPre = false, onlyBf = false;
+  const bfChip = document.getElementById("bf-chip");
+  bfChip.addEventListener("click", () => { onlyBf = !onlyBf; bfChip.setAttribute("aria-pressed", onlyBf); render(); });
   const preChip = document.getElementById("pre-chip");
   preChip.addEventListener("click", () => { onlyPre = !onlyPre; preChip.setAttribute("aria-pressed", onlyPre); render(); });
   const topChip = document.getElementById("top-chip");
@@ -511,13 +521,14 @@
 
   const waText = (p) => p.soldOut ? "Avísame cuando llegue" : p.presale ? "Reservar por WhatsApp" : "Pedir por WhatsApp";
   const presaleNote = `<span class="pre-note">Reserva exclusiva: asegura el tuyo hoy, antes de que llegue a la vitrina.</span>`;
-  const orderMsg = (p) => p.presale ? `${HOLA} quiero reservar el ${p.brand} ${p.model}${p.ref ? " (Ref. " + p.ref + ")" : ""}${p.color ? " color " + p.color.toLowerCase() : ""}${p.price ? " de " + fmt(p.price) : ""}${p.discount ? " (con el " + p.discount + "% de descuento)" : ""} que está en preventa. ¿Cómo hago la reserva?` : `${HOLA} me interesa el ${p.brand} ${p.model}${p.condition === "usado" ? " usado" : ""}${p.ref ? " (Ref. " + p.ref + ")" : ""}${p.price ? " de " + fmt(p.price) : ""}${p.discount ? " (con el " + p.discount + "% de descuento)" : ""}. ¿Me das más información?`;
+  const orderMsg = (p) => p.presale ? `${HOLA} quiero reservar el ${p.brand} ${p.model}${p.ref ? " (Ref. " + p.ref + ")" : ""}${p.color ? " color " + p.color.toLowerCase() : ""}${p.price ? " de " + fmt(p.price) : ""}${p.discount ? " (con el " + p.discount + "% de descuento" + (p.bf ? " Black Friday" : "") + ")" : ""} que está en preventa. ¿Cómo hago la reserva?` : `${HOLA} me interesa el ${p.brand} ${p.model}${p.condition === "usado" ? " usado" : ""}${p.ref ? " (Ref. " + p.ref + ")" : ""}${p.price ? " de " + fmt(p.price) : ""}${p.discount ? " (con el " + p.discount + "% de descuento" + (p.bf ? " Black Friday" : "") + ")" : ""}. ¿Me das más información?`;
   function eta(d) {
     if (!d) return "";
     const icon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`;
     if (/inmediat/i.test(d)) return `<span class="eta now">${icon}Entrega inmediata</span>`;
     return `<span class="eta">${icon}${esc(d)}${/^[\d\s–-]+$/.test(d) ? " días" : ""}</span>`;
   }
+  const offBadge = (p) => !p.discount || p.soldOut ? "" : p.bf ? `<span class="off bf"><small>Black Friday</small>-${p.discount}%</span>` : `<span class="off">-${p.discount}%</span>`;
   const priceHTML = (p) => !p.price ? "Consultar"
     : fmt(p.price) + (p.discount ? ` <s class="was">${fmt(p.listPrice)}</s>` : "");
   const isLast = (t) => /ultimaunidad|ultimasunidades/.test(norm(t || ""));
@@ -540,7 +551,7 @@
     const play = p.videos.length ? `<button class="play" type="button" data-v="${i}" aria-label="Ver video del ${esc(p.brand + " " + p.model)}">${PLAY}${p.videos.length > 1 ? p.videos.length + " videos" : "Ver video"}</button>` : "";
     const file = p.videos.map(videoInfo).find((x) => x.file);
     return `<article class="card${p.soldOut ? " agotado" : ""}">
-      ${sv}<div class="img" data-i="${i}"${file ? ` data-prev="${esc(file.file)}"` : ""}>${tag ? `<span class="tag${isLast(tag) ? " last" : ""}${p.presale ? " pre" : ""}">${esc(tag)}</span>` : ""}${p.condition === "usado" ? `<span class="used">Usado</span>` : ""}${p.discount && !p.soldOut ? `<span class="off">-${p.discount}%</span>` : ""}${img}${count}${play}</div>
+      ${sv}<div class="img" data-i="${i}"${file ? ` data-prev="${esc(file.file)}"` : ""}>${tag ? `<span class="tag${isLast(tag) ? " last" : ""}${p.presale ? " pre" : ""}">${esc(tag)}</span>` : ""}${p.condition === "usado" ? `<span class="used">Usado</span>` : ""}${offBadge(p)}${img}${count}${play}</div>
       <div class="body">
         <div class="brandname">${esc(p.brand)}${p.movement ? ` · <span class="mov">${esc(p.movement)}</span>` : ""}</div>
         <h3 data-i="${i}">${esc(p.model)}</h3>
@@ -610,7 +621,7 @@
     if (keepPage !== true) page = 1;
     updateCount();
     const term = q.value.trim().toLowerCase();
-    let list = PRODUCTS.filter((p) => (!onlyTop || p.top) && (!onlyPre || p.presale) && (estado === "Todos" || p.condition === estado) && matchGender(p) && matchMovement(p) && matchMaterial(p) && (active === "Todas" || p.brand === active) &&
+    let list = PRODUCTS.filter((p) => (!onlyTop || p.top) && (!onlyPre || p.presale) && (!onlyBf || p.bf) && (estado === "Todos" || p.condition === estado) && matchGender(p) && matchMovement(p) && matchMaterial(p) && (active === "Todas" || p.brand === active) &&
       (!term || [p.brand, p.model, p.ref, p.material, p.caseMaterial, p.color, p.movement].join(" ").toLowerCase().includes(term)));
     const dir = sortEl.value === "asc" ? 1 : sortEl.value === "desc" ? -1 : 0;
     // "Consultar" (sin precio) siempre al final.
@@ -755,6 +766,15 @@
   $("promo-form").addEventListener("submit", (e) => { e.preventDefault(); applyCode($("promo-input").value); });
   $("promo-remove").addEventListener("click", () => { promo = null; try { localStorage.removeItem(PROMO_KEY); } catch (e) {} promoMsg(""); renderCart(); });
   // Barra de promoción arriba de la página con el código vigente. Al tocarla se copia el código.
+  // Barra de Black Friday: lleva al catálogo con solo los relojes en oferta.
+  function bfBar() {
+    if (!PRODUCTS.some((p) => p.bf) || $("bf-bar")) return;
+    document.body.insertAdjacentHTML("afterbegin", `<button type="button" class="bf-bar" id="bf-bar"><b>Black Friday</b><span>${BF}% adicional en relojes seleccionados</span><span class="pb-copy">Ver ofertas</span></button>`);
+    $("bf-bar").addEventListener("click", () => {
+      if (!onlyBf) bfChip.click();
+      document.getElementById("catalogo").scrollIntoView({ behavior: "smooth" });
+    });
+  }
   async function promoBar() {
     let c;
     try { c = (await loadCodes())[0]; } catch (e) { return; }
@@ -779,7 +799,7 @@
   function cartMsg() {
     const lines = cart.map((it) => {
       const p = it.p, ref = [p.ref && "Ref. " + p.ref, p.color && "color " + p.color.toLowerCase()].filter(Boolean).join(", ");
-      const val = p.price ? ` = ${fmt(p.price * it.q)}${p.discount ? ` (con ${p.discount}% de descuento)` : ""}` : " = precio por consultar";
+      const val = p.price ? ` = ${fmt(p.price * it.q)}${p.discount ? ` (con ${p.discount}% de descuento${p.bf ? " Black Friday" : ""})` : ""}` : " = precio por consultar";
       return `• ${it.q} x ${p.brand} ${p.model}${p.condition === "usado" ? " usado" : ""}${ref ? ` (${ref})` : ""}${val}${p.presale ? " [reserva de preventa]" : ""}`;
     });
     const units = cart.reduce((n, it) => n + it.q, 0), t = totals();
@@ -858,7 +878,7 @@
     $("destacados").hidden = !FEAT.length;
     if (!FEAT.length) return;
     track.innerHTML = FEAT.map((p, i) => `<article class="feat-slide">
-      <div class="feat-img" data-fd="${i}">${p.discount && !p.soldOut ? `<span class="off">-${p.discount}%</span>` : ""}${p.photo ? `<img data-trim src="${esc(p.photo)}" alt="${esc(p.brand + " " + p.model)}">` : watchSVG(p)}</div>
+      <div class="feat-img" data-fd="${i}">${offBadge(p)}${p.photo ? `<img data-trim src="${esc(p.photo)}" alt="${esc(p.brand + " " + p.model)}">` : watchSVG(p)}</div>
       <div class="feat-txt">
         <div class="eyebrow">Recomendado de la semana${p.tag && !isLast(p.tag) ? " · " + esc(p.tag) : ""}</div>${p.tag && isLast(p.tag) && !p.soldOut ? `<span class="tag last feat-last">${esc(p.tag)}</span>` : ""}
         <div class="feat-brand">${esc(p.brand)}${p.movement ? ` · ${esc(p.movement)}` : ""}</div>
@@ -969,6 +989,8 @@
     renderFeatured();
     topChip.hidden = !PRODUCTS.some((p) => p.top);
     preChip.hidden = !PRODUCTS.some((p) => p.presale);
+    bfChip.hidden = !PRODUCTS.some((p) => p.bf);
+    bfBar();
     estadoEl.hidden = !(PRODUCTS.some((p) => p.condition === "usado") && PRODUCTS.some((p) => p.condition === "nuevo"));
     if (/[?&]revisar\b/.test(location.search)) showCheck();
     renderChips();

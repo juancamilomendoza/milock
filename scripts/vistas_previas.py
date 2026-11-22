@@ -37,7 +37,10 @@ def slug(*parts):
 COLS = {"marca": "brand", "modelo": "model", "referencia": "ref", "ref": "ref", "color": "color",
         "precio": "price", "descuento": "discount", "dcto": "discount", "oferta": "discount",
         "preventa": "presale", "reserva": "presale", "reservar": "presale", "proximamente": "presale",
-        "foto": "photo", "imagen": "photo"}
+        "foto": "photo", "imagen": "photo", "entregainmediata": "immediate", "inmediata": "immediate",
+        "inmediato": "immediate", "disponible": "available"}
+_bf = re.search(r"blackFriday\s*:\s*(\d+)", _cfg)
+BF = min(90, int(_bf.group(1))) if _bf else 0
 
 
 def config():
@@ -89,6 +92,12 @@ def photo_url(u):
     return u
 
 
+def is_bf(p):
+    # Igual que en la página: Black Friday solo en relojes de entrega inmediata que no estén agotados.
+    av = norm(p.get("available", "") or "si")
+    return BF > 0 and norm(p.get("immediate", "")) not in ("", "no") and av not in ("no", "agotado")
+
+
 def price_text(p):
     n = int(re.sub(r"\D", "", p.get("price", "")) or 0)
     d = p.get("discount", "").replace(",", ".")
@@ -100,6 +109,8 @@ def price_text(p):
         pct *= 100
     if n and 0 < pct < 100:
         n = round(n * (1 - pct / 100))
+    if n and is_bf(p):
+        n = round(n * (1 - BF / 100))
     return ("$" + f"{n:,}".replace(",", ".")) if n else ""
 
 
@@ -178,7 +189,8 @@ def main():
                 image, image_type, image_size = SITE + "r/img/" + s + "-" + key[:8] + ".jpg", "image/jpeg", "800"
         bits = [price_text(p), p.get("ref") and "Ref. " + p["ref"], p.get("color", "").capitalize()]
         presale = norm(p.get("presale", "")) not in ("", "no")
-        tail = "Reserva exclusiva por WhatsApp." if presale else "100% original. Atención personalizada por WhatsApp."
+        tail = ("Reserva exclusiva por WhatsApp." if presale else
+                f"Black Friday: {BF}% adicional. 100% original." if is_bf(p) else "100% original. Atención personalizada por WhatsApp.")
         desc = " · ".join(b for b in bits if b) + ". " + tail
         target = SITE + "?reloj=" + s
         page = PAGE.format(title=html.escape(name + " · MILOCK"), desc=html.escape(desc), url=SITE + "r/" + s + "/",

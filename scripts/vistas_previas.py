@@ -190,7 +190,7 @@ def main():
         bits = [price_text(p), p.get("ref") and "Ref. " + p["ref"], p.get("color", "").capitalize()]
         presale = norm(p.get("presale", "")) not in ("", "no")
         tail = ("Reserva exclusiva por WhatsApp." if presale else
-                f"Black Friday: {BF}% adicional. 100% original." if is_bf(p) else "100% original. Atención personalizada por WhatsApp.")
+                f"Black Week: {BF}% adicional. 100% original." if is_bf(p) else "100% original. Atención personalizada por WhatsApp.")
         desc = " · ".join(b for b in bits if b) + ". " + tail
         target = SITE + "?reloj=" + s
         page = PAGE.format(title=html.escape(name + " · MILOCK"), desc=html.escape(desc), url=SITE + "r/" + s + "/",

@@ -521,14 +521,14 @@
 
   const waText = (p) => p.soldOut ? "Avísame cuando llegue" : p.presale ? "Reservar por WhatsApp" : "Pedir por WhatsApp";
   const presaleNote = `<span class="pre-note">Reserva exclusiva: asegura el tuyo hoy, antes de que llegue a la vitrina.</span>`;
-  const orderMsg = (p) => p.presale ? `${HOLA} quiero reservar el ${p.brand} ${p.model}${p.ref ? " (Ref. " + p.ref + ")" : ""}${p.color ? " color " + p.color.toLowerCase() : ""}${p.price ? " de " + fmt(p.price) : ""}${p.discount ? " (con el " + p.discount + "% de descuento" + (p.bf ? " Black Friday" : "") + ")" : ""} que está en preventa. ¿Cómo hago la reserva?` : `${HOLA} me interesa el ${p.brand} ${p.model}${p.condition === "usado" ? " usado" : ""}${p.ref ? " (Ref. " + p.ref + ")" : ""}${p.price ? " de " + fmt(p.price) : ""}${p.discount ? " (con el " + p.discount + "% de descuento" + (p.bf ? " Black Friday" : "") + ")" : ""}. ¿Me das más información?`;
+  const orderMsg = (p) => p.presale ? `${HOLA} quiero reservar el ${p.brand} ${p.model}${p.ref ? " (Ref. " + p.ref + ")" : ""}${p.color ? " color " + p.color.toLowerCase() : ""}${p.price ? " de " + fmt(p.price) : ""}${p.discount ? " (con el " + p.discount + "% de descuento" + (p.bf ? " Black Week" : "") + ")" : ""} que está en preventa. ¿Cómo hago la reserva?` : `${HOLA} me interesa el ${p.brand} ${p.model}${p.condition === "usado" ? " usado" : ""}${p.ref ? " (Ref. " + p.ref + ")" : ""}${p.price ? " de " + fmt(p.price) : ""}${p.discount ? " (con el " + p.discount + "% de descuento" + (p.bf ? " Black Week" : "") + ")" : ""}. ¿Me das más información?`;
   function eta(d) {
     if (!d) return "";
     const icon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`;
     if (/inmediat/i.test(d)) return `<span class="eta now">${icon}Entrega inmediata</span>`;
     return `<span class="eta">${icon}${esc(d)}${/^[\d\s–-]+$/.test(d) ? " días" : ""}</span>`;
   }
-  const offBadge = (p) => !p.discount || p.soldOut ? "" : p.bf ? `<span class="off bf"><small>Black Friday</small>-${p.discount}%</span>` : `<span class="off">-${p.discount}%</span>`;
+  const offBadge = (p) => !p.discount || p.soldOut ? "" : p.bf ? `<span class="off bf"><small>Black Week</small>-${p.discount}%</span>` : `<span class="off">-${p.discount}%</span>`;
   const priceHTML = (p) => !p.price ? "Consultar"
     : fmt(p.price) + (p.discount ? ` <s class="was">${fmt(p.listPrice)}</s>` : "");
   const isLast = (t) => /ultimaunidad|ultimasunidades/.test(norm(t || ""));
@@ -769,13 +769,13 @@
   // Barra de Black Friday: lleva al catálogo con solo los relojes en oferta.
   function bfBar() {
     if (!PRODUCTS.some((p) => p.bf) || $("bf-bar")) return;
-    document.body.insertAdjacentHTML("afterbegin", `<button type="button" class="bf-bar bf-go" id="bf-bar"><b>Black Friday</b><span>${BF}% adicional en relojes seleccionados</span><span class="pb-copy">Ver ofertas</span></button>`);
+    document.body.insertAdjacentHTML("afterbegin", `<button type="button" class="bf-bar bf-go" id="bf-bar"><b>Black Week</b><span>${BF}% adicional en relojes seleccionados</span><span class="pb-copy">Ver ofertas</span></button>`);
     const n = PRODUCTS.filter((p) => p.bf).length;
-    document.getElementById("inicio").insertAdjacentHTML("afterbegin", `<section class="bf-hero" aria-label="Black Friday"><div class="wrap">
+    document.getElementById("inicio").insertAdjacentHTML("afterbegin", `<section class="bf-hero" aria-label="Black Week"><div class="wrap">
       <p class="bf-kicker">Solo por tiempo limitado</p>
-      <h2 class="bf-title">Black <span>Friday</span></h2>
+      <h2 class="bf-title">Black <span>Week</span></h2>
       <p class="bf-deal"><b>${BF}% adicional</b> en ${n} ${n === 1 ? "reloj seleccionado" : "relojes seleccionados"}</p>
-      <button type="button" class="btn btn-gold bf-go">Ver ofertas Black Friday</button>
+      <button type="button" class="btn btn-gold bf-go">Ver ofertas Black Week</button>
     </div></section>`);
     document.querySelectorAll(".bf-go").forEach((b) => b.addEventListener("click", () => {
       if (!onlyBf) bfChip.click();
@@ -806,7 +806,7 @@
   function cartMsg() {
     const lines = cart.map((it) => {
       const p = it.p, ref = [p.ref && "Ref. " + p.ref, p.color && "color " + p.color.toLowerCase()].filter(Boolean).join(", ");
-      const val = p.price ? ` = ${fmt(p.price * it.q)}${p.discount ? ` (con ${p.discount}% de descuento${p.bf ? " Black Friday" : ""})` : ""}` : " = precio por consultar";
+      const val = p.price ? ` = ${fmt(p.price * it.q)}${p.discount ? ` (con ${p.discount}% de descuento${p.bf ? " Black Week" : ""})` : ""}` : " = precio por consultar";
       return `• ${it.q} x ${p.brand} ${p.model}${p.condition === "usado" ? " usado" : ""}${ref ? ` (${ref})` : ""}${val}${p.presale ? " [reserva de preventa]" : ""}`;
     });
     const units = cart.reduce((n, it) => n + it.q, 0), t = totals();

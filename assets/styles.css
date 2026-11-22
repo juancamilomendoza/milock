@@ -562,7 +562,7 @@ html:root.tema-elegante[data-theme="dark"]{
    Se monta sobre el tema elegante: negro profundo y dorado en las zonas grandes, catálogo claro para leer bien. */
 html:root.tema-blackfriday{--navy:#0B0B0C; --gold:#D4AF37; --gold-deep:#A8862A; --on-gold:#0B0B0C}
 .tema-blackfriday .hero{background:#0B0B0C}
-.tema-blackfriday .hero .eyebrow::after{content:" · Black Friday";color:#fff}
+.tema-blackfriday .hero .eyebrow::after{content:" · Black Week";color:#fff}
 .tema-blackfriday footer{background:#0B0B0C}
 .tema-blackfriday .feat-box,.tema-blackfriday .para-ti{background:#0B0B0C;box-shadow:inset 0 0 0 1px rgba(212,175,55,.45)}
 .bf-bar{display:flex;width:100%;justify-content:center;align-items:center;gap:10px 14px;flex-wrap:wrap;border:0;cursor:pointer;font:inherit;font-size:13.5px;padding:10px 16px;background:#0B0B0C;color:#F2EEE6;text-align:center;letter-spacing:.04em}
@@ -589,7 +589,7 @@ html:root.tema-blackfriday{--navy:#0B0B0C; --gold:#D4AF37; --gold-deep:#A8862A; 
 .bf-deal b{color:#D4AF37;font-weight:800}
 .bf-hero .btn{font-size:14px;padding:16px 30px}
 .card.is-bf{border-color:#D4AF37;box-shadow:inset 0 0 0 1px #D4AF37}
-.card.is-bf .img::after{content:"Black Friday";position:absolute;left:0;right:0;bottom:0;z-index:2;background:#0B0B0C;color:#D4AF37;font-size:12px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;text-align:center;padding:7px 4px}
+.card.is-bf .img::after{content:"Black Week";position:absolute;left:0;right:0;bottom:0;z-index:2;background:#0B0B0C;color:#D4AF37;font-size:12px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;text-align:center;padding:7px 4px}
 .card.is-bf .pcount,.card.is-bf .play{bottom:42px}
 .card.is-bf .price{color:#A8862A}
 .off.bf{padding:7px 11px;font-size:20px;font-weight:900}

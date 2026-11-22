@@ -32,7 +32,7 @@ window.MILOCK_CONFIG = {
     "top",
   ],
 
-  // Tema de la página: "blackfriday" (actual), "elegante", "" (diseño anterior) o "halloween". Para probar uno sin cambiarlo, agreguen ?tema=elegante o ?tema=clasico a la dirección.
+  // Tema de la página: "blackfriday" (actual, promoción Black Week), "elegante", "" (diseño anterior) o "halloween". Para probar uno sin cambiarlo, agreguen ?tema=elegante o ?tema=clasico a la dirección.
   tema: "blackfriday",
 
   // Black Friday: % adicional para los relojes con "Entrega inmediata" = Sí (se suma al de la columna Descuento).

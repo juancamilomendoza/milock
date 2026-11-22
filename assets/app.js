@@ -770,11 +770,10 @@
   function bfBar() {
     if (!PRODUCTS.some((p) => p.bf) || $("bf-bar")) return;
     document.body.insertAdjacentHTML("afterbegin", `<button type="button" class="bf-bar bf-go" id="bf-bar"><b>Black Week</b><span>${BF}% adicional en relojes seleccionados</span><span class="pb-copy">Ver ofertas</span></button>`);
-    const n = PRODUCTS.filter((p) => p.bf).length;
     document.getElementById("inicio").insertAdjacentHTML("afterbegin", `<section class="bf-hero" aria-label="Black Week"><div class="wrap">
       <p class="bf-kicker">Solo por tiempo limitado</p>
       <h2 class="bf-title">Black <span>Week</span></h2>
-      <p class="bf-deal"><b>${BF}% adicional</b> en ${n} ${n === 1 ? "reloj seleccionado" : "relojes seleccionados"}</p>
+      <p class="bf-deal"><b>${BF}% adicional</b> en relojes seleccionados</p>
       <button type="button" class="btn btn-gold bf-go">Ver ofertas Black Week</button>
     </div></section>`);
     document.querySelectorAll(".bf-go").forEach((b) => b.addEventListener("click", () => {

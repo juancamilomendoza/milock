@@ -773,6 +773,7 @@
     document.getElementById("inicio").insertAdjacentHTML("afterbegin", `<section class="bf-hero" aria-label="Black Week"><div class="wrap">
       <p class="bf-kicker">Solo por tiempo limitado</p>
       <h2 class="bf-title">Black <span>Week</span></h2>
+      <p class="bf-copy">Tu próximo reloj te está esperando. Y esta semana, a precio de locos.</p>
       <p class="bf-deal"><b>${BF}% adicional</b> en relojes seleccionados</p>
       <button type="button" class="btn btn-gold bf-go">Ver ofertas Black Week</button>
     </div></section>`);

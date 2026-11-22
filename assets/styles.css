@@ -604,3 +604,4 @@ html:root.tema-blackfriday{--navy:#0B0B0C; --gold:#D4AF37; --gold-deep:#A8862A; 
 }
 .bf-hero .btn-gold,.tema-elegante .bf-hero .btn-gold{background:#D4AF37;color:#0B0B0C}
 .bf-hero .btn-gold:hover,.tema-elegante .bf-hero .btn-gold:hover{background:#F2EEE6;color:#0B0B0C}
+.bf-copy{margin:0 auto 14px;max-width:34ch;font-family:var(--f-display);font-style:italic;font-size:clamp(20px,2.8vw,30px);line-height:1.25;color:#F2EEE6}

@@ -29,7 +29,8 @@ window.MILOCK_CONFIG = {
     "assets/models/web/modelo-1.jpg", "assets/models/web/modelo-2.jpg", "assets/models/web/modelo-3.jpg",
     "assets/models/web/modelo-4.jpg", "assets/models/web/modelo-5.jpg", "assets/models/web/modelo-6.jpg",
     "assets/models/web/modelo-7.jpg", "assets/models/web/modelo-8.jpg", "assets/models/web/modelo-9.jpg",
-    "assets/models/web/modelo-10.jpg", "assets/models/web/modelo-11.jpg",
+    "assets/models/web/modelo-10.jpg", "assets/models/web/modelo-11.jpg", "assets/models/web/modelo-12.jpg",
+    "assets/models/web/modelo-13.jpg", "assets/models/web/modelo-14.jpg", "assets/models/web/modelo-15.jpg",
   ],
 
   orden: [

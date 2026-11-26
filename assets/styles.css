@@ -605,3 +605,24 @@ html:root.tema-blackfriday{--navy:#0B0B0C; --gold:#D4AF37; --gold-deep:#A8862A; 
 .bf-hero .btn-gold,.tema-elegante .bf-hero .btn-gold{background:#D4AF37;color:#0B0B0C}
 .bf-hero .btn-gold:hover,.tema-elegante .bf-hero .btn-gold:hover{background:#F2EEE6;color:#0B0B0C}
 .bf-copy{margin:0 auto 14px;max-width:34ch;font-family:var(--f-display);font-style:italic;font-size:clamp(20px,2.8vw,30px);line-height:1.25;color:#F2EEE6}
+
+/* Carrusel "En la muñeca" (fotos de modelos) */
+.look{background:var(--surface);border-top:1px solid var(--line)}
+.look-nav{display:flex;gap:8px}
+.look-btn{width:44px;height:44px;border:1px solid var(--line);border-radius:var(--r,50%);background:transparent;color:var(--fg);font-size:26px;line-height:1;cursor:pointer}
+.look-btn:hover{border-color:var(--gold);color:var(--gold-deep)}
+.look-track{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:4px}
+.look-track::-webkit-scrollbar{display:none}
+.look-item{flex:0 0 calc((100% - 48px)/4);aspect-ratio:3/4;scroll-snap-align:start;border:0;padding:0;background:var(--dial-bg);cursor:zoom-in;overflow:hidden;border-radius:var(--r,10px)}
+.look-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s ease}
+.look-item:hover img{transform:scale(1.04)}
+@media (max-width:1000px){.look-item{flex-basis:calc((100% - 32px)/3)}}
+@media (max-width:720px){.look-item{flex-basis:72%}.look-nav{display:none}}
+dialog.look-box{border:0;padding:0;margin:0;width:100vw;height:100dvh;max-width:100vw;max-height:100dvh;background:rgba(5,8,11,.96);display:none;place-items:center}
+dialog.look-box[open]{display:grid}
+dialog.look-box::backdrop{background:#000}
+html:has(dialog.look-box[open]){overflow:hidden}
+.look-box img{max-width:calc(100vw - 32px);max-height:calc(100dvh - 32px);object-fit:contain;display:block}
+.look-box .cine-nav{position:absolute;top:calc(50% - 24px)}
+.look-bp{left:14px} .look-bn{right:14px}
+@media (prefers-reduced-motion:reduce){.look-item img{transition:none}}

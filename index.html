@@ -26,8 +26,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Montserrat:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="assets/styles.css?v=20261122f">
-<script src="config.js?v=20261122f"></script>
+<link rel="stylesheet" href="assets/styles.css?v=20261126a">
+<script src="config.js?v=20261126a"></script>
 <script>
   // Si la página se mudó (config.js -> sitio), quien entre por la dirección vieja de GitHub Pages pasa a la nueva.
   (function(){var S=(window.MILOCK_CONFIG||{}).sitio;if(S&&/github\.io$/.test(location.hostname)&&S.indexOf(location.hostname)<0)location.replace(S.replace(/\/$/,"")+"/"+location.search+location.hash);})();
@@ -139,6 +139,14 @@
     </div>
   </section>
 
+  <section class="look" id="estilo" aria-label="MILOCK en la muñeca" hidden>
+    <div class="wrap">
+      <div class="sec-head"><div><div class="eyebrow" style="color:var(--gold-deep)">Estilo MILOCK</div><h2>En la muñeca</h2><p>Así se ven nuestros relojes en el día a día.</p></div>
+        <div class="look-nav"><button type="button" class="look-btn" id="look-prev" aria-label="Fotos anteriores">‹</button><button type="button" class="look-btn" id="look-next" aria-label="Fotos siguientes">›</button></div></div>
+      <div class="look-track" id="look-track"></div>
+    </div>
+  </section>
+  <dialog class="look-box" id="look-box" aria-label="Foto"><button type="button" class="cine-x" id="look-x" aria-label="Cerrar">×</button><button type="button" class="cine-nav look-bp" id="look-bp" aria-label="Anterior">‹</button><img id="look-img" alt=""><button type="button" class="cine-nav look-bn" id="look-bn" aria-label="Siguiente">›</button></dialog>
   <section class="how" id="como-comprar">
     <div class="wrap">
       <div class="sec-head"><div><h2>Cómo comprar</h2><p>Atención personalizada por WhatsApp, desde que eliges hasta que lo tienes en la muñeca.</p></div></div>
@@ -268,6 +276,6 @@
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 2.9 2.9 0 0 0-.9 2.2 5 5 0 0 0 1.1 2.7 11.5 11.5 0 0 0 4.4 3.9c1.6.7 2.3.8 3.1.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg>
 </a>
 
-<script src="assets/app.js?v=20261122f"></script>
+<script src="assets/app.js?v=20261126a"></script>
 </body>
 </html>

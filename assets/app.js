@@ -1007,6 +1007,36 @@
     if (PARA_TI && !SELLER) document.getElementById("catalogo").scrollIntoView();
     openShared();
   }
+  // Carrusel "En la muñeca": fotos de modelos (config.js -> modelos). Se desliza con el dedo o con las flechas,
+  // avanza solo cada 5 s mientras nadie lo toca, y al tocar una foto se abre en grande.
+  (function lookbook() {
+    const pics = (CFG.modelos || []).filter(Boolean);
+    if (!pics.length) return;
+    const sec = $("estilo"), track = $("look-track"), box = $("look-box"), big = $("look-img");
+    track.innerHTML = pics.map((src, i) => `<button type="button" class="look-item" data-l="${i}" aria-label="Ver foto ${i + 1}"><img src="${esc(src)}" alt="Modelo con reloj MILOCK" loading="lazy"></button>`).join("");
+    sec.hidden = false;
+    const step = () => (track.firstElementChild ? track.firstElementChild.getBoundingClientRect().width + 16 : 300);
+    const go = (dir) => {
+      const end = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+      if (dir > 0 && end) track.scrollTo({ left: 0, behavior: "smooth" });
+      else track.scrollBy({ left: dir * step(), behavior: "smooth" });
+    };
+    $("look-prev").addEventListener("click", () => go(-1));
+    $("look-next").addEventListener("click", () => go(1));
+    let idle = true;
+    ["pointerdown", "mouseenter", "focusin"].forEach((ev) => track.addEventListener(ev, () => { idle = false; }));
+    track.addEventListener("mouseleave", () => { idle = true; });
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) setInterval(() => { if (idle && !box.open && !document.hidden) go(1); }, 5000);
+    let cur = 0;
+    const show = (i) => { cur = (i + pics.length) % pics.length; big.src = pics[cur]; };
+    track.addEventListener("click", (e) => { const b = e.target.closest("[data-l]"); if (!b) return; show(+b.dataset.l); box.showModal(); gaEvent("ver_foto_modelo", { foto: cur + 1 }); });
+    $("look-x").addEventListener("click", () => box.close());
+    $("look-bp").addEventListener("click", () => show(cur - 1));
+    $("look-bn").addEventListener("click", () => show(cur + 1));
+    box.addEventListener("click", (e) => { if (e.target === box) box.close(); });
+    box.addEventListener("keydown", (e) => { if (e.key === "ArrowLeft") show(cur - 1); if (e.key === "ArrowRight") show(cur + 1); });
+  })();
+
   // Clics en "Pedir por WhatsApp": del carrito, de un reloj o el botón general.
   document.addEventListener("click", (e) => {
     const a = e.target.closest && e.target.closest('a[href^="https://wa.me/"]');

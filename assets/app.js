@@ -1010,7 +1010,9 @@
   // Carrusel "En la muñeca": fotos de modelos (config.js -> modelos). Se desliza con el dedo o con las flechas,
   // avanza solo cada 5 s mientras nadie lo toca, y al tocar una foto se abre en grande.
   (function lookbook() {
+    // Orden aleatorio en cada visita.
     const pics = (CFG.modelos || []).filter(Boolean);
+    for (let i = pics.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pics[i], pics[j]] = [pics[j], pics[i]]; }
     if (!pics.length) return;
     const sec = $("estilo"), track = $("look-track"), box = $("look-box"), big = $("look-img");
     track.innerHTML = pics.map((src, i) => `<button type="button" class="look-item" data-l="${i}" aria-label="Ver foto ${i + 1}"><img src="${esc(src)}" alt="Modelo con reloj MILOCK" loading="lazy"></button>`).join("");

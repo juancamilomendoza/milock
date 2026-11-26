@@ -23,7 +23,7 @@ window.MILOCK_CONFIG = {
 
   // Orden del catálogo en "Recomendados", de arriba hacia abajo. Cada línea es un grupo; "+" significa que debe cumplir las dos cosas.
   // Palabras posibles: destacado, inmediata (entrega inmediata), maspedido, ultimaunidad, top. Lo que no entre en ningún grupo va al final.
-  // Carrusel "En la muñeca": fotos de modelos con los relojes, en este orden. Para agregar una, súbanla a
+  // Carrusel "En la muñeca": fotos de modelos con los relojes (se muestran en orden aleatorio en cada visita). Para agregar una, súbanla a
   // assets/models/web/ (JPG liviano) y pongan su nombre aquí. Lista vacía = la sección no aparece.
   modelos: [
     "assets/models/web/modelo-1.jpg", "assets/models/web/modelo-2.jpg", "assets/models/web/modelo-3.jpg",
